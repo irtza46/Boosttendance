@@ -6,7 +6,7 @@
     android:layout_height="fill_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@drawable/background"
-    tools:context=".EmailLoginActivity" >
+    tools:context=".login_registration_activities.login_activities.EmailLoginActivity" >
 
     <ImageView
         android:id="@+id/imageView"

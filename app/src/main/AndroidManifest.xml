@@ -27,7 +27,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".MainActivity" />
+        <activity android:name=".login_registration_activities.registration_activities.MobileVerificationActivity"></activity>
+        <activity android:name=".StarterActivity"></activity>
+        <activity
+            android:name=".MainActivity"
+            android:alwaysRetainTaskState="true"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".SplashScreen"
             android:screenOrientation="portrait">
@@ -38,16 +43,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".RegisterActivity"
+            android:name=".login_registration_activities.registration_activities.RegisterActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".LoginActivity"
+            android:name=".login_registration_activities.LoginActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".EmailLoginActivity"
+            android:name=".login_registration_activities.login_activities.EmailLoginActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".MobileLoginActivity"
+            android:name=".login_registration_activities.login_activities.MobileLoginActivity"
             android:screenOrientation="portrait" />
     </application>
 

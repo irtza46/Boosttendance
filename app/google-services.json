@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "354511164698-441a11kn7v6ru7qps6jnvppico8gehg8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ilumastech.smart_attendance_system",
+            "certificate_hash": "bb2b78157661680e08905a6f6fff0a636573a2c5"
+          }
+        },
+        {
           "client_id": "354511164698-315ls15gbb2c088c1jr4p96i650jau0j.apps.googleusercontent.com",
           "client_type": 3
         }

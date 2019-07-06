@@ -3,10 +3,13 @@ package com.ilumastech.smart_attendance_system;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.ilumastech.smart_attendance_system.login_registration_activities.LoginActivity;
 
 public class SplashScreen extends AppCompatActivity {
 
@@ -22,10 +25,9 @@ public class SplashScreen extends AppCompatActivity {
         animation.setStartOffset(1000);
         logo.startAnimation(animation);
 
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
+        (new Handler()).postDelayed(new Runnable() {
             public void run() {
-                startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+                startActivity(new Intent(SplashScreen.this, LoginActivity.class));
                 overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 finish();
             }
