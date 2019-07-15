@@ -22,7 +22,7 @@ public class StarterActivity extends AppCompatActivity {
             SharedPreferences prefs = getSharedPreferences("X", MODE_PRIVATE);
             activityClass = Class.forName(Objects.requireNonNull(
                     prefs.getString("lastActivity", LoginActivity.class.getName())));
-        } catch(ClassNotFoundException ex) {
+        } catch (ClassNotFoundException ex) {
             activityClass = LoginActivity.class;
         }
 

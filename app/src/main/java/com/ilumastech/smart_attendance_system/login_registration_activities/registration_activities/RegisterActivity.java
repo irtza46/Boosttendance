@@ -7,10 +7,10 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -19,7 +19,13 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.hbb20.CountryCodePicker;
+import com.ilumastech.smart_attendance_system.Database;
 import com.ilumastech.smart_attendance_system.MainActivity;
 import com.ilumastech.smart_attendance_system.Prompt;
 import com.ilumastech.smart_attendance_system.R;
@@ -90,12 +96,13 @@ public class RegisterActivity extends AppCompatActivity {
 
     public void registerUser(View view) {
 
-        String accType = "" + ((RadioButton)findViewById(type.getCheckedRadioButtonId())).getText();
+        final String accType = (type.getCheckedRadioButtonId() == R.id.student) ?
+                "student" : "teacher";
         final String fullName = fullName_tf.getText().toString();
         final String number = countryCodePicker.getFullNumberWithPlus();
-        String email = email_tf.getText().toString();
-        String password = password_tf.getText().toString();
-        String repassword = rPassword_tf.getText().toString();
+        final String email = email_tf.getText().toString();
+        final String password = password_tf.getText().toString();
+        final String repassword = rPassword_tf.getText().toString();
 
         // validating if data has been input in the required data fields
         if (!validateForm(fullName, number, email, password, repassword))
@@ -116,9 +123,46 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        Log.d(TAG, "createAccount:" + email);
-
         prompt.showProgress("Sign Up", "Registering...");
+
+        // check if user don't exist with this number
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("users");
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                boolean found = false;
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    if (Objects.equals(snapshot.child("phoneNumber").getValue(), number)) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (prompt != null)
+                    prompt.hideProgress();
+                if (found) {
+                    number_tf.setError("Mobile number is already registered with an email account.\n" +
+                            "Please register using a different account mobile number.");
+                    prompt.showFailureMessagePrompt(
+                            "Mobile number is already registered with an email account.\n" +
+                                    "Please register using a different account mobile number.");
+                } else
+                    createAccount(email, password, accType, fullName, number);
+
+                Log.d(TAG, "Number Found: " + number + " Realtime " + found);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+    }
+
+    private void createAccount(final String email, String password, final String accType, final String fullName,
+                               final String number) {
+
+        Log.d(TAG, "createAccount:" + email);
 
         firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -127,7 +171,6 @@ public class RegisterActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "createUserWithEmail:success");
 
-                            prompt.hideProgress();
                             FirebaseUser user = firebaseAuth.getCurrentUser();
                             if (user != null) {
 
@@ -135,35 +178,13 @@ public class RegisterActivity extends AppCompatActivity {
                                         .setDisplayName(fullName).build());
                                 user.sendEmailVerification();
 
-                                startActivity(new Intent(RegisterActivity.this,
-                                        MobileVerificationActivity.class)
-                                        .putExtra("number", number));
+                                // saving user info to database without number
+                                Database.createUser(user.getUid(),
+                                        accType, fullName, email, number);
                             }
-
-                            prompt.showSuccessMessagePrompt("Account created.");
-                            (new Handler()).postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                    prompt.hidePrompt();
-                                    prompt.showProgress("Login", "Login in...");
-                                    (new Handler()).postDelayed(new Runnable() {
-                                        @Override
-                                        public void run() {
-
-                                            prompt.hideProgress();
-                                            startActivity(new Intent(
-                                                    RegisterActivity.this,
-                                                    MainActivity.class)
-                                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
-                                                            Intent.FLAG_ACTIVITY_CLEAR_TASK));
-
-                                            RegisterActivity.this.finish();
-                                        }
-                                    }, 3000);
-
-                                }
-                            }, 2000);
+                            startActivityForResult(new Intent(RegisterActivity.this,
+                                    MobileVerificationActivity.class)
+                                    .putExtra("number", number), 1);
                         } else {
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
 
@@ -173,6 +194,48 @@ public class RegisterActivity extends AppCompatActivity {
                         }
                     }
                 });
+
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+
+            prompt.showSuccessMessagePrompt("Account created.");
+            (new Handler()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+
+                    prompt.hidePrompt();
+                    prompt.showProgress("Login", "Login in...");
+                    (new Handler()).postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            prompt.hideProgress();
+                            startActivity(new Intent(
+                                    RegisterActivity.this,
+                                    MainActivity.class)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                                            Intent.FLAG_ACTIVITY_CLEAR_TASK));
+
+                            RegisterActivity.this.finish();
+                        }
+                    }, 3000);
+
+                }
+            }, 2000);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (prompt != null) {
+            prompt.hideInputPrompt();
+            prompt = null;
+        }
+    }
 }

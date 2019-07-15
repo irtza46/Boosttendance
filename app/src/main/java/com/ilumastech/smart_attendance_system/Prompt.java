@@ -32,10 +32,9 @@ public class Prompt {
     private LinearLayout prompt_buttons;
     private Button prompt_ok_btn, prompt_cancel_btn;
 
-    private String input;
-
     public Prompt(Activity activity) {
         this.activity = activity;
+        initView();
     }
 
     private void initView() {
@@ -51,19 +50,13 @@ public class Prompt {
         prompt_buttons = view.findViewById(R.id.prompt_buttons);
         prompt_ok_btn = view.findViewById(R.id.prompt_ok);
         prompt_cancel_btn = view.findViewById(R.id.prompt_cancel);
-
-        prompt_ok_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                input = prompt_input.getText().toString();
-            }
-        });
         prompt_cancel_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 hideInputPrompt();
             }
         });
+
     }
 
     private void showPrompt() {
@@ -77,7 +70,8 @@ public class Prompt {
 
     public void hidePrompt() {
         ((ViewGroup) activity.findViewById(android.R.id.content)).removeView(view);
-        alertDialog.dismiss();
+        if (alertDialog != null && alertDialog.isShowing())
+            alertDialog.dismiss();
     }
 
     public void hideProgress() {
@@ -123,13 +117,27 @@ public class Prompt {
         setValues(R.drawable.ic_failure, "Failure", View.GONE, msg, View.GONE, View.GONE);
     }
 
-    public void showInputMessagePrompt(String heading, String msg, int input_type) {
+    public void showInputMessagePrompt(String heading, String msg, int input_type,
+                                       String b1, String b2) {
         prompt_input.setInputType(input_type);
         setValues(R.drawable.logo, heading, View.GONE, msg, View.VISIBLE, View.VISIBLE);
+
+        prompt_ok_btn.setText(b1);
+        prompt_cancel_btn.setText(b2);
     }
 
-    public String getInput() {
-        return input;
+    public void showInputMessagePrompt(String heading, String msg, String b1, String b2) {
+        setValues(R.drawable.logo, heading, View.GONE, msg, View.GONE, View.VISIBLE);
+
+        prompt_ok_btn.setText(b1);
+        prompt_cancel_btn.setText(b2);
     }
 
+    public void setOkButtonListener(View.OnClickListener clickListener) {
+        prompt_ok_btn.setOnClickListener(clickListener);
+    }
+
+    public EditText getPrompt_input() {
+        return prompt_input;
+    }
 }

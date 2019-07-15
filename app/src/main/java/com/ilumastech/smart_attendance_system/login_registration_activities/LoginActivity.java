@@ -29,11 +29,15 @@ public class LoginActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
 
-        // for testing login & registration activities uncomment below statement
-        //firebaseAuth.signOut();
-        //
-
         if (firebaseAuth.getCurrentUser() != null) {
+
+/*
+            if (CheckUser.checkIfUserExistThroughNumber(number))
+                startActivity(new Intent(this, MobileVerificationActivity.class)
+                        .putExtra("number", number));
+
+*/
+
             startActivity(new Intent(this, MainActivity.class).addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
             this.finish();

@@ -8,4 +8,15 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="ToolbarTheme" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="android:popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+    </style>
+
+    <style name="BottomNavigation">
+        <item name="android:background">@drawable/bottom_nav_color_unpressed</item>
+        <item name="itemBackground">@drawable/bottom_nav_color_pressed</item>
+        <item name="itemIconTint">#FFF</item>
+        <item name="itemTextColor">#FFF</item>
+    </style>
+
 </resources>

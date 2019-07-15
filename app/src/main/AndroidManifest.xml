@@ -2,9 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.ilumastech.smart_attendance_system">
-    <!-- Step 1: Add the following permission to the app -->
-    <uses-permission android:name="android.permission.USE_BIOMETRIC" /> <!-- Step 2: This permission is depreciated in Android P -->
+
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+
+    <uses-permission
+        android:name="android.permission.ACCESS_FINE_LOCATION"
+        android:required="true" />
+    <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE"
+        android:required="true" />
     <uses-permission
         android:name="android.permission.ACCESS_COARSE_LOCATION"
         android:required="true" />
@@ -27,12 +34,42 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".login_registration_activities.registration_activities.MobileVerificationActivity"></activity>
-        <activity android:name=".StarterActivity"></activity>
+        <activity android:name=".AttendanceHistoryActivity" />
+        <activity android:name=".AttendanceSessionActivity" />
+        <activity android:name=".ClassDetails" />
+        <activity android:name=".MarkAttendanceActivity" />
         <activity
-            android:name=".MainActivity"
-            android:alwaysRetainTaskState="true"
-            android:screenOrientation="portrait" />
+            android:name=".CreateClassActivity"
+            android:windowSoftInputMode="adjustPan" />
+        <activity android:name=".SearchClassesActivity" />
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_logo_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorPrimary" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="fcm_default_channel" />
+
+        <service
+            android:name=".BoosttendanceMessageService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ilumastech.smart_attendance_system.MainActivity" />
+        </activity>
+        <activity android:name=".AboutActivity" />
         <activity
             android:name=".SplashScreen"
             android:screenOrientation="portrait">
@@ -53,6 +90,16 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".login_registration_activities.login_activities.MobileLoginActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".login_registration_activities.registration_activities.MobileVerificationActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".StarterActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MainActivity"
+            android:alwaysRetainTaskState="true"
             android:screenOrientation="portrait" />
     </application>
 

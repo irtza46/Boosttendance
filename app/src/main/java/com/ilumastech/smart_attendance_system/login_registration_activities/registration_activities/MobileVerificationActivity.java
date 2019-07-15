@@ -1,5 +1,6 @@
 package com.ilumastech.smart_attendance_system.login_registration_activities.registration_activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -37,6 +38,35 @@ public class MobileVerificationActivity extends AppCompatActivity {
 
     private String resendVerificationId;
     private PhoneAuthProvider.ForceResendingToken resendToken;
+    private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks =
+            new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+
+                @Override
+                public void onVerificationCompleted(PhoneAuthCredential credential) {
+                    Log.d(TAG, "onVerificationCompleted:" + credential);
+
+                    signInWithPhoneAuth(credential);
+                }
+
+                @Override
+                public void onVerificationFailed(FirebaseException e) {
+                    Log.w(TAG, "onVerificationFailed", e);
+
+                    if (e instanceof FirebaseAuthInvalidCredentialsException) {
+                        prompt.showFailureMessagePrompt("Code is invalid.\n" +
+                                "Please try resending code");
+                    } else if (e instanceof FirebaseTooManyRequestsException)
+                        prompt.showFailureMessagePrompt("SMS Quota has exceeded");
+                }
+
+                @Override
+                public void onCodeSent(String verificationId, PhoneAuthProvider.ForceResendingToken token) {
+                    Log.d(TAG, "onCodeSent:" + verificationId);
+
+                    resendVerificationId = verificationId;
+                    resendToken = token;
+                }
+            };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,36 +108,6 @@ public class MobileVerificationActivity extends AppCompatActivity {
         signInWithPhoneAuth(PhoneAuthProvider.getCredential(resendVerificationId, code));
     }
 
-    private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks =
-            new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-
-                @Override
-                public void onVerificationCompleted(PhoneAuthCredential credential) {
-                    Log.d(TAG, "onVerificationCompleted:" + credential);
-
-                    signInWithPhoneAuth(credential);
-                }
-
-                @Override
-                public void onVerificationFailed(FirebaseException e) {
-                    Log.w(TAG, "onVerificationFailed", e);
-
-                    if (e instanceof FirebaseAuthInvalidCredentialsException) {
-                        prompt.showFailureMessagePrompt("Code is invalid.\n" +
-                                "Please try resending code");
-                    } else if (e instanceof FirebaseTooManyRequestsException)
-                        prompt.showFailureMessagePrompt("SMS Quota has exceeded");
-                }
-
-                @Override
-                public void onCodeSent(String verificationId, PhoneAuthProvider.ForceResendingToken token) {
-                    Log.d(TAG, "onCodeSent:" + verificationId);
-
-                    resendVerificationId = verificationId;
-                    resendToken = token;
-                }
-            };
-
     public void resendCode(View view) {
 
         Log.d(TAG, "resendCodeNumber:" + number);
@@ -140,10 +140,12 @@ public class MobileVerificationActivity extends AppCompatActivity {
                                     @Override
                                     public void run() {
                                         prompt.hidePrompt();
+                                        setResult(RESULT_OK, new Intent());
                                         MobileVerificationActivity.this.finish();
                                     }
                                 }, 3000);
                             } else {
+
                                 Log.w(TAG, "signInMobileLink:failure", task.getException());
 
                                 if (task.getException() instanceof
@@ -164,4 +166,12 @@ public class MobileVerificationActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (prompt != null) {
+            prompt.hideInputPrompt();
+            prompt = null;
+        }
+    }
 }
