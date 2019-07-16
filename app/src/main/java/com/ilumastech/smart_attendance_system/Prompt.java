@@ -114,7 +114,7 @@ public class Prompt {
     }
 
     public void showFailureMessagePrompt(String msg) {
-        setValues(R.drawable.ic_failure, "Failure", View.GONE, msg, View.GONE, View.GONE);
+        setValues(R.drawable.ic_warning, "Failure", View.GONE, msg, View.GONE, View.GONE);
     }
 
     public void showInputMessagePrompt(String heading, String msg, int input_type,
