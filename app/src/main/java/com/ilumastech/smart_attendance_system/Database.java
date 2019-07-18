@@ -5,10 +5,12 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
@@ -16,7 +18,44 @@ public class Database {
 
     private static final String TAG = "Database";
 
-    private static boolean exist;
+    public static final String USERS = "USERS";
+    public static final String U_ID = "U_ID";
+    public static final String FULL_NAME = "FULL_NAME";
+    public static final String EMAIL = "EMAIL";
+    public static final String PHONE_NUMBER = "Database";
+    public static final String JOINED = "JOINED";
+    public static final String CREATED = "CREATED";
+    public static final String ATTENDANCE_ID = "ATTENDANCE_ID";
+
+    public static final String CLASSES = "CLASSES";
+    public static final String CLASS_ID = "CLASS_ID";
+    public static final String CLASS_NAME = "CLASS_NAME";
+    public static final String SESSION = "SESSION";
+    public static final String ATTENDANCE_DATE = "ATTENDANCE_DATE";
+    public static final String TIMEOUT = "TIMEOUT";
+    public static final String LONGITUDE = "LONGITUDE";
+    public static final String LATITUDE = "LATITUDE";
+
+    public  static final String IMEI = "IMEI";
+
+    public static final String MSG = "MSG";
+    public static final String DATE_TIME = "DATE_TIME";
+
+    public static FirebaseAuth getFirebaseAuthInstance() {
+        return FirebaseAuth.getInstance();
+    }
+
+    public static DatabaseReference getDatabaseReference() {
+        return FirebaseDatabase.getInstance().getReference();
+    }
+
+    public static DatabaseReference getDatabaseReference(String location) {
+        return FirebaseDatabase.getInstance().getReference(location);
+    }
+
+    public static Query getUserByMobileNumber(String number) {
+        return getDatabaseReference(USERS).orderByChild(PHONE_NUMBER).equalTo(number);
+    }
 
     public static void createUser(String uid, String accType, String fullName, String email, String phoneNumber) {
 

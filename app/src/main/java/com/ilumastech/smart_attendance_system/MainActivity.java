@@ -104,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
         drawerLayout.addDrawerListener(drawerToggle);
         drawerToggle.syncState();
 
+        // initializing the classroom list views
         listView = findViewById(R.id.list_view);
         listView.addFooterView(new View(this));
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -118,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
                 else
                     startActivity(new Intent(MainActivity.this,
-                            ClassDetails.class).putExtra("classRoom", classRoom));
+                            ClassDetailsActivity.class).putExtra("classRoom", classRoom));
             }
         });
 
@@ -181,6 +182,25 @@ public class MainActivity extends AppCompatActivity {
         Database.getJoinedClasses(user.getUid(), joinedClassArrayAdapter);
         Database.getCreatedClasses(user.getUid(), createdClassArrayAdapter);
         listView.setAdapter(joinedClassArrayAdapter);
+//TODO        listView.setTextFilterEnabled(true);
+        //editText.addTextChangedListener(new TextWatcher() {
+        //
+        //            public void onTextChanged(CharSequence arg0, int arg1, int arg2,
+        //                    int arg3) {
+        //
+        //            }
+        //
+        //            public void beforeTextChanged(CharSequence arg0, int arg1,
+        //                    int arg2, int arg3) {
+        //
+        //            }
+        //
+        //            public void afterTextChanged(Editable arg0) {
+        //                MyActivityName.this.adapter.getFilter().filter(arg0);
+        //
+        //            }
+        //        });
+
         bottomNavigationView.setSelectedItemId(R.id.joined_classes);
     }
 

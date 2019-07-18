@@ -97,6 +97,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginRight="8dp"
                 android:gravity="center"
+                android:onClick="selectFile"
                 android:orientation="horizontal"
                 android:text="No File selected"
                 android:textAppearance="@style/TextAppearance.AppCompat.Headline"

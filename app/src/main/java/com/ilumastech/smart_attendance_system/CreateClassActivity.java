@@ -169,8 +169,6 @@ public class CreateClassActivity extends AppCompatActivity {
                                         newClass.put("attendanceId", attendanceId);
                                         reference.child("users/" + uid + "/classes/joined")
                                                 .child(classId).setValue(newClass);
-
-                                        registerToTopic(uid);
                                     }
                                 }
                             }
@@ -192,10 +190,6 @@ public class CreateClassActivity extends AppCompatActivity {
         }
 
         Log.d(TAG, "Class created classId: " + classId);
-    }
-
-    private void registerToTopic(String uid) {
-        //TODO
     }
 
     public void selectFile(View view) {

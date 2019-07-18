@@ -6,7 +6,7 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.auth.FirebaseAuth;
+import com.ilumastech.smart_attendance_system.Database;
 import com.ilumastech.smart_attendance_system.MainActivity;
 import com.ilumastech.smart_attendance_system.R;
 import com.ilumastech.smart_attendance_system.login_registration_activities.login_activities.EmailLoginActivity;
@@ -15,33 +15,17 @@ import com.ilumastech.smart_attendance_system.login_registration_activities.regi
 
 public class LoginActivity extends AppCompatActivity {
 
-    private FirebaseAuth firebaseAuth;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
-        firebaseAuth = FirebaseAuth.getInstance();
+        checkUser();
     }
 
     @Override
     public void onStart() {
         super.onStart();
-
-        if (firebaseAuth.getCurrentUser() != null) {
-
-/*
-            if (CheckUser.checkIfUserExistThroughNumber(number))
-                startActivity(new Intent(this, MobileVerificationActivity.class)
-                        .putExtra("number", number));
-
-*/
-
-            startActivity(new Intent(this, MainActivity.class).addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-            this.finish();
-        }
+        checkUser();
     }
 
     public void registerScreen(View view) {
@@ -56,4 +40,21 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(new Intent(this, MobileLoginActivity.class));
     }
 
+    public void checkUser() {
+
+        // if user has already logged in
+        if (Database.getFirebaseAuthInstance().getCurrentUser() != null) {
+
+//            if (CheckUser.checkIfUserExistThroughNumber(number))
+//                startActivity(new Intent(this, MobileVerificationActivity.class)
+//                        .putExtra("number", number));
+
+            // starting main activity and finishing all the previous activities
+            startActivity(new Intent(this, MainActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+
+            // finishing login activity
+            this.finish();
+        }
+    }
 }

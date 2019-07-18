@@ -2,7 +2,6 @@ package com.ilumastech.smart_attendance_system.login_registration_activities.log
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -15,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseException;
-import com.google.firebase.FirebaseTooManyRequestsException;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
@@ -23,13 +21,14 @@ import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.hbb20.CountryCodePicker;
+import com.ilumastech.smart_attendance_system.Database;
 import com.ilumastech.smart_attendance_system.MainActivity;
 import com.ilumastech.smart_attendance_system.Prompt;
 import com.ilumastech.smart_attendance_system.R;
+import com.ilumastech.smart_attendance_system.SASConstants;
+import com.ilumastech.smart_attendance_system.Tools;
 import com.ilumastech.smart_attendance_system.login_registration_activities.registration_activities.RegisterActivity;
 
 import java.util.Objects;
@@ -41,66 +40,85 @@ public class MobileLoginActivity extends AppCompatActivity {
 
     private EditText number_tf, code_tf;
     private LinearLayout c_resend;
-
-    private FirebaseAuth firebaseAuth;
-    private Prompt prompt;
-
     private CountryCodePicker countryCodePicker;
 
-    private String resendVerificationId;
-    private PhoneAuthProvider.ForceResendingToken resendToken;
-    private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks =
-            new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+    private Prompt prompt;
 
-                @Override
-                public void onVerificationCompleted(PhoneAuthCredential credential) {
-                    Log.d(TAG, "onVerificationCompleted:" + credential);
-
-                    signInWithPhoneAuth(credential);
-                }
-
-                @Override
-                public void onVerificationFailed(FirebaseException e) {
-                    Log.w(TAG, "onVerificationFailed", e);
-
-                    if (e instanceof FirebaseAuthInvalidCredentialsException) {
-                        number_tf.setError("Code is invalid.\n" +
-                                "Please try resending code");
-                        prompt.showFailureMessagePrompt("Code is invalid.\n" +
-                                "Please try resending code");
-                    } else if (e instanceof FirebaseTooManyRequestsException)
-                        prompt.showFailureMessagePrompt("SMS Quota has exceeded.");
-                }
-
-                @Override
-                public void onCodeSent(String verificationId, PhoneAuthProvider.ForceResendingToken token) {
-                    Log.d(TAG, "onCodeSent:" + verificationId);
-
-                    resendVerificationId = verificationId;
-                    resendToken = token;
-
-                    c_resend.setVisibility(View.VISIBLE);
-                }
-            };
+    // for resending code and listening to verification callbacks
+    private PhoneAuthProvider.OnVerificationStateChangedCallbacks verificationCallbacks;
+    private String verificationId;
+    private PhoneAuthProvider.ForceResendingToken token;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mobile_login);
+        init();
+    }
 
+    private void init() {
         number_tf = findViewById(R.id.number_tf);
         code_tf = findViewById(R.id.code_tf);
         c_resend = findViewById(R.id.c_resend);
-
-        prompt = new Prompt(this);
-        firebaseAuth = FirebaseAuth.getInstance();
-
         countryCodePicker = findViewById(R.id.country_picker);
         countryCodePicker.registerCarrierNumberEditText(number_tf);
+
+        // creating prompt instance to display prompts to user
+        prompt = new Prompt(this);
+
+        // setting verification call backs
+        verificationCallbacks = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+            @Override
+            public void onVerificationCompleted(PhoneAuthCredential credential) {
+                Log.d(TAG, "onVerificationCompleted:" + credential);
+
+                // login with mobile credential
+                signInWithPhoneAuth(credential);
+            }
+
+            @Override
+            public void onVerificationFailed(FirebaseException e) {
+                Log.w(TAG, "onVerificationFailed", e);
+
+                // if code entered was invalid
+                if (e instanceof FirebaseAuthInvalidCredentialsException) {
+                    code_tf.setError("Code is invalid.\nPLease resend and retry code.");
+                    prompt.showFailureMessagePrompt("Code is invalid.\nPLease resend and retry code.");
+                }
+
+                // prompt user about login failure and provide the reason
+                else
+                    prompt.showFailureMessagePrompt("Login not successful\n" + e.getMessage());
+
+                // show long wait prompt
+                Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
+                    @Override
+                    public void run() {
+                        prompt.hidePrompt();
+                    }
+                });
+            }
+
+            @Override
+            public void onCodeSent(String verificationId, PhoneAuthProvider.ForceResendingToken token) {
+                Log.d(TAG, "onCodeSent:" + verificationId);
+
+                // saving verification id and token if required for resending the code
+                MobileLoginActivity.this.verificationId = verificationId;
+                MobileLoginActivity.this.token = token;
+
+                // displaying code text view to enter code received and verify
+                c_resend.setVisibility(View.VISIBLE);
+            }
+        };
+    }
+
+    public void registerScreen(View view) {
+        startActivity(new Intent(this, RegisterActivity.class));
     }
 
     public void authenticate(View view) {
 
-        // if code text view is visible
+        // if code has been sent and code text view has been displayed
         if (c_resend.getVisibility() != View.GONE) {
 
             // validating if code has been input in the required data fields
@@ -109,61 +127,73 @@ public class MobileLoginActivity extends AppCompatActivity {
                 return;
             }
 
+            // getting entered code
             String code = code_tf.getText().toString();
 
             Log.d(TAG, "loginAccountWithCode:" + code);
 
-            signInWithPhoneAuth(PhoneAuthProvider.getCredential(resendVerificationId, code));
-        } else {
+            // verifying the providing code and login
+            signInWithPhoneAuth(PhoneAuthProvider.getCredential(verificationId, code));
+        }
 
-            // validating number
+        // if code has not been sent and code text view has is invisible
+        else {
+
+            // if number entered is not valid according to the format of country selected
             if (!countryCodePicker.isValidFullNumber()) {
-                number_tf.setError("Mobile number is not valid.\nPlease re-enter Mobile number.");
-                prompt.showFailureMessagePrompt("Mobile number is not valid.\nPlease re-enter Mobile number.");
+                number_tf.setError("Mobile number is invalid.\nPlease re-enter Mobile number.");
+
+                // show short wait prompt to user about mobile number is not valid
+                prompt.showFailureMessagePrompt("Mobile number is invalid.\nPlease re-enter Mobile number.");
+                Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                    @Override
+                    public void run() {
+                        prompt.hidePrompt();
+                    }
+                });
                 return;
             }
 
+            // getting entered mobile number
+            final String number = countryCodePicker.getFullNumberWithPlus();
+
             // check if user don't exist with this number
-            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("users");
-            reference.addValueEventListener(new ValueEventListener() {
+            Database.getUserByMobileNumber(number).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                    String number = countryCodePicker.getFullNumberWithPlus();
-
-                    boolean found = false;
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        if (Objects.equals(snapshot.child("phoneNumber").getValue(), number)) {
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found) {
+                    // if user with this mobile number already registered
+                    if (!dataSnapshot.exists()) {
                         number_tf.setError("Mobile number is not registered with an email account.\n" +
                                 "Please register a new account with this mobile number or\n" +
                                 "enter already registered mobile number.");
+
+                        // prompt user about mobile not registered.
                         prompt.showFailureMessagePrompt(
                                 "Mobile number is not registered with an email account.\n" +
                                         "Please register a new account with this mobile number or\n" +
                                         "enter already registered mobile number.");
-                        return;
-                    } else {
+                    }
+
+                    // if given phone number is registered with an account
+                    else {
 
                         Log.d(TAG, "loginAccount:" + number);
 
-                        // send verification code
-                        PhoneAuthProvider.getInstance().verifyPhoneNumber(
-                                number,                             // Phone number to verify
-                                60,                              // Timeout duration
-                                TimeUnit.SECONDS,                   // Unit of timeout
-                                MobileLoginActivity.this,    // Activity (for callback binding)
-                                mCallbacks);                        // OnVerificationStateChangedCallbacks
+                        // sending verification code
+                        PhoneAuthProvider.getInstance().verifyPhoneNumber(number, SASConstants.MOBILE_VERIFICATION_TIMEOUT, TimeUnit.SECONDS, MobileLoginActivity.this, verificationCallbacks);
 
+                        // prompt user about code has been sent
                         prompt.showSuccessMessagePrompt("Code has been sent through SMS");
                     }
 
-                    Log.d(TAG, "Number Found: " + number + " Realtime " + found);
+                    // show short wait prompt
+                    Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                        @Override
+                        public void run() {
+                            prompt.hidePrompt();
+                        }
+                    });
                 }
 
                 @Override
@@ -173,87 +203,113 @@ public class MobileLoginActivity extends AppCompatActivity {
         }
     }
 
-    private void signInWithPhoneAuth(PhoneAuthCredential credential) {
-
-        prompt.showProgress("Sign In", "Login in...");
-
-        firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-
-                            Log.d(TAG, "loginWithNumber:success");
-
-                            prompt.hideProgress();
-                            prompt.showSuccessMessagePrompt("Login successful");
-                            (new Handler()).postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                    prompt.hidePrompt();
-                                    if (firebaseAuth.getCurrentUser() != null) {
-
-                                        startActivity(new Intent(MobileLoginActivity.this,
-                                                MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
-                                                Intent.FLAG_ACTIVITY_CLEAR_TASK));
-
-                                        MobileLoginActivity.this.finish();
-                                    }
-                                }
-                            }, 2000);
-                        } else {
-                            Log.w(TAG, "loginWithNumber:failure", task.getException());
-
-                            prompt.hideProgress();
-                            if (task.getException() instanceof
-                                    FirebaseAuthInvalidCredentialsException) {
-                                code_tf.setError("Code is invalid.\n" +
-                                        "PLease resend and retry code.");
-                                prompt.showFailureMessagePrompt("Code is invalid.\n" +
-                                        "PLease resend and retry code.");
-                            } else
-                                prompt.showFailureMessagePrompt("Login not successful\n" +
-                                        Objects.requireNonNull(task.getException()).getMessage());
-                        }
-                    }
-                });
-    }
-
-    public void registerScreen(View view) {
-        startActivity(new Intent(this, RegisterActivity.class));
-    }
-
     public void resendCode(View view) {
 
+        // getting entered mobile number
         String number = countryCodePicker.getFullNumberWithPlus();
 
-        // validating number
+        // if number entered is not valid according to the format of country selected
         if (!countryCodePicker.isValidFullNumber()) {
-            number_tf.setError("Mobile number is not valid.\nPlease re-enter Mobile number.");
-            prompt.showFailureMessagePrompt("Mobile number is not valid.\nPlease re-enter Mobile number.");
+            number_tf.setError("Mobile number is invalid.\nPlease re-enter Mobile number.");
+
+            // show short wait prompt to user about mobile number is not valid
+            prompt.showFailureMessagePrompt("Mobile number is invalid.\nPlease re-enter Mobile number.");
+            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                @Override
+                public void run() {
+                    prompt.hidePrompt();
+                }
+            });
             return;
         }
 
         Log.d(TAG, "resendCodeNumber:" + number);
 
-        PhoneAuthProvider.getInstance().verifyPhoneNumber(
-                number,             // Phone number to verify
-                60,              // Timeout duration
-                TimeUnit.SECONDS,   // Unit of timeout
-                this,        // Activity (for callback binding)
-                mCallbacks,         // OnVerificationStateChangedCallbacks
-                resendToken);       // ForceResendingToken from callbacks
+        // resend verification code to the provided number and listen to the callbacks
+        PhoneAuthProvider.getInstance().verifyPhoneNumber(number, SASConstants.MOBILE_VERIFICATION_TIMEOUT, TimeUnit.SECONDS, this, verificationCallbacks, token);
 
+        // show short wait prompt to user about code has been sent again
         prompt.showSuccessMessagePrompt("Code has been sent again through SMS");
+        Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+            @Override
+            public void run() {
+                prompt.hidePrompt();
+            }
+        });
+    }
+
+    private void signInWithPhoneAuth(PhoneAuthCredential credential) {
+
+        // prompt user for login in
+        prompt.showProgress("Sign In", "Login in...");
+
+        // authenticating phone number credential
+        FirebaseAuth.getInstance().signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+
+                        // dismissing progress prompt
+                        prompt.hideProgress();
+
+                        // if login was successful
+                        if (task.isSuccessful()) {
+
+                            Log.d(TAG, "loginWithNumber:success");
+
+                            // prompt show for login successful
+                            prompt.showSuccessMessagePrompt("Login successful");
+
+                            // wait 2 second before starting main activity
+                            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                                        @Override
+                                        public void run() {
+
+                                            // dismissing prompt
+                                            prompt.hidePrompt();
+
+                                            // starting main activity
+                                            startActivity(new Intent(MobileLoginActivity.this, MainActivity.class)
+                                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+
+                                            // finishing this email login activity
+                                            MobileLoginActivity.this.finish();
+                                        }
+                                    }
+                            );
+                        }
+
+                        // if login was not successful
+                        else {
+
+                            Log.w(TAG, "loginWithNumber:failure", task.getException());
+
+                            // if code entered was invalid
+                            if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
+                                code_tf.setError("Code is invalid.\nPLease resend and retry code.");
+                                prompt.showFailureMessagePrompt("Code is invalid.\nPLease resend and retry code.");
+                            }
+
+                            // prompt user about login failure and provide the reason
+                            else
+                                prompt.showFailureMessagePrompt("Login not successful\n" + Objects.requireNonNull(task.getException()).getMessage());
+
+                            // show prompt for 3 seconds
+                            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
+                                @Override
+                                public void run() {
+                                    prompt.hidePrompt();
+                                }
+                            });
+                        }
+                    }
+                });
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (prompt != null) {
-            prompt.hideInputPrompt();
-            prompt = null;
-        }
+        Objects.requireNonNull(prompt).hidePrompt();
+        prompt = null;
     }
 }

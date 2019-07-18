@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.ilumastech.smart_attendance_system">
 
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <uses-permission android:name="android.permission.USE_FINGERPRINT" />
 
@@ -36,7 +37,7 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity android:name=".AttendanceHistoryActivity" />
         <activity android:name=".AttendanceSessionActivity" />
-        <activity android:name=".ClassDetails" />
+        <activity android:name=".ClassDetailsActivity" />
         <activity android:name=".MarkAttendanceActivity" />
         <activity
             android:name=".CreateClassActivity"
@@ -71,7 +72,7 @@
         </activity>
         <activity android:name=".AboutActivity" />
         <activity
-            android:name=".SplashScreen"
+            android:name=".startup_activities.SplashScreen"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

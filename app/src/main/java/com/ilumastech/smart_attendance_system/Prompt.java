@@ -60,11 +60,17 @@ public class Prompt {
     }
 
     private void showPrompt() {
-        builder.setView(view);
 
+        // setting builder view and creating alert dialog
+        builder.setView(view);
         alertDialog = builder.create();
-        Objects.requireNonNull(alertDialog.getWindow()).setBackgroundDrawable(
-                new ColorDrawable(Color.TRANSPARENT));
+
+        // setting alert dialog properties
+        Objects.requireNonNull(alertDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        alertDialog.setCancelable(false);
+        alertDialog.setCanceledOnTouchOutside(false);
+
+        // displaying alert dialog
         alertDialog.show();
     }
 

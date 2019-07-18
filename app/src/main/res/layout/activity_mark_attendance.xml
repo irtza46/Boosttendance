@@ -85,22 +85,24 @@
             android:textColor="#FFF"
             android:textStyle="bold" />
 
-        <Button
-            android:layout_width="270dp"
-            android:layout_height="55dp"
-            android:layout_gravity="center|top"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:background="@drawable/button"
-            android:onClick="updateAttendanceID"
-            android:text="Update Attendance ID"
-            android:textAllCaps="false"
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:text="Teacher's ID:"
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+            android:textColor="#FFF" />
+
+        <TextView
+            android:id="@+id/teacher_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="iqra.tariq@hotmail.com"
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
             android:textColor="#FFF"
-            android:textSize="20sp"
-            app:fontFamily="sans-serif" />
+            android:textStyle="bold" />
 
         <Button
             android:layout_width="270dp"
@@ -135,19 +137,25 @@
             android:textColor="#FFF"
             android:textSize="20sp"
             app:fontFamily="sans-serif" />
+
     </LinearLayout>
 
-    <ImageButton
+
+    <Button
         android:id="@+id/mark_attendance_btn"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="center|bottom"
+        android:layout_width="270dp"
+        android:layout_height="55dp"
+        android:layout_gravity="center|top"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="20dp"
-        android:background="@drawable/ic_fingerprint_black_24dp"
-        android:gravity="bottom|center"
+        android:background="@drawable/button"
         android:onClick="markAttendance"
+        android:text="Mark your attendance"
+        android:textAllCaps="false"
+        android:textColor="#FFF"
+        android:textSize="20sp"
+        app:fontFamily="sans-serif"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

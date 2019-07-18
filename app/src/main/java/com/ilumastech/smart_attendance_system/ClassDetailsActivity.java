@@ -31,9 +31,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class ClassDetails extends AppCompatActivity {
+public class ClassDetailsActivity extends AppCompatActivity {
 
-    private static final String TAG = "ClassDetails";
+    private static final String TAG = "ClassDetailsActivity";
 
     private Prompt prompt;
 
@@ -221,14 +221,6 @@ public class ClassDetails extends AppCompatActivity {
                             }, 3000);
 
                         }
-
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (prompt != null)
-                                    prompt.hidePrompt();
-                            }
-                        }, 3000);
                     }
 
                     @Override
@@ -236,6 +228,13 @@ public class ClassDetails extends AppCompatActivity {
                     }
                 }
         );
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (prompt != null)
+                    prompt.hidePrompt();
+            }
+        }, 3000);
     }
 
     @Override

@@ -8,6 +8,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -51,6 +52,7 @@ public class MarkAttendanceActivity extends AppCompatActivity {
 
         ((TextView) findViewById(R.id.class_name)).setText(classRoom.getClassName());
         ((TextView) findViewById(R.id.attendance_id)).setText(classRoom.getAttendanceId());
+//TODO        ((TextView) findViewById(R.id.teacher_email)).setText(classRoom.getTeacherEmail());
     }
 
 //    public void updateAttendanceID(View view) {
@@ -132,11 +134,19 @@ public class MarkAttendanceActivity extends AppCompatActivity {
 
             final String classId = classRoom.getClassId();
 
+            // getting mac address
+            TelephonyManager telephonyManager;
+            telephonyManager = (TelephonyManager) getSystemService(Context.
+                    TELEPHONY_SERVICE);
+            String deviceId = telephonyManager.getDeviceId();
+
+            // getting coordinates of student
             Location location = ((LocationManager) getSystemService(Context.LOCATION_SERVICE))
                     .getLastKnownLocation(LocationManager.GPS_PROVIDER);
             double studentLongitude = location.getLongitude();
             double studentLatitude = location.getLatitude();
 
+            // getting current date
             Calendar calendar = Calendar.getInstance();
             final String attendanceDate = (new SimpleDateFormat("dd-MMM-yyyy", Locale.US))
                     .format(calendar.getTime());
