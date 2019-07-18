@@ -46,23 +46,6 @@ public class EmailLoginActivity extends AppCompatActivity {
         startActivity(new Intent(this, RegisterActivity.class));
     }
 
-    private boolean validateInputs(String email, String password) {
-
-        // if nothing is entered in email field
-        if (TextUtils.isEmpty(email)) {
-            email_tf.setError("Email is required.");
-            return false;
-        }
-
-        // if nothing is entered in password field
-        if (TextUtils.isEmpty(password)) {
-            password_tf.setError("Password is required.");
-            return false;
-        }
-
-        return true;
-    }
-
     public void authenticate(View view) {
 
         // getting entered email and password
@@ -86,8 +69,6 @@ public class EmailLoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-
-                        // dismissing progress prompt
                         prompt.hideProgress();
 
                         // if login was successful
@@ -129,6 +110,23 @@ public class EmailLoginActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    private boolean validateInputs(String email, String password) {
+
+        // if nothing is entered in email field
+        if (TextUtils.isEmpty(email)) {
+            email_tf.setError("Email is required.");
+            return false;
+        }
+
+        // if nothing is entered in password field
+        if (TextUtils.isEmpty(password)) {
+            password_tf.setError("Password is required.");
+            return false;
+        }
+
+        return true;
     }
 
 }

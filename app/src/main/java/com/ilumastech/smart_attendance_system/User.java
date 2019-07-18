@@ -1,5 +1,6 @@
 package com.ilumastech.smart_attendance_system;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class User {
@@ -7,20 +8,18 @@ public class User {
     private String uid;
     private String fullName;
     private String email;
-    private String accType;
     private String phoneNumber;
     private Classes classes;
 
     public User() {
     }
 
-    public User(String uid, String fullName, String email, String accType, String phoneNumber,
-                List<ClassRoom> createdClassRooms, List<ClassRoom> joinedClassRooms) {
-        this.uid = uid;
+    public User(String fullName, String email, String phoneNumber) {
         this.fullName = fullName;
         this.email = email;
-        this.accType = accType;
         this.phoneNumber = phoneNumber;
+        List<ClassRoom> createdClassRooms = new ArrayList<>();
+        List<ClassRoom> joinedClassRooms = new ArrayList<>();
         this.classes = new Classes(createdClassRooms, joinedClassRooms);
     }
 
@@ -46,14 +45,6 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getAccType() {
-        return accType;
-    }
-
-    public void setAccType(String accType) {
-        this.accType = accType;
     }
 
     public String getPhoneNumber() {

@@ -101,9 +101,9 @@
                 android:orientation="horizontal"
                 android:text="No File selected"
                 android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-                android:textColor="@color/colorAccent"
+                android:textColor="#FFF"
                 android:textSize="20sp"
-                android:textStyle="italic" />
+                android:textStyle="italic|bold" />
 
             <Button
                 android:layout_width="270dp"

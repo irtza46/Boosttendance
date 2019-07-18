@@ -20,7 +20,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/logo" />
+        app:srcCompat="@drawable/logo"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/textView"
@@ -60,42 +61,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <RadioGroup
-                android:id="@+id/type"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:checkedButton="@id/student"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <RadioButton
-                    android:id="@+id/student"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginEnd="20dp"
-                    android:buttonTint="@color/colorPrimary"
-                    android:fontFamily="sans-serif-medium"
-                    android:text="Student"
-                    android:textAlignment="center"
-                    android:textColor="#FFF"
-                    android:textSize="20sp" />
-
-                <RadioButton
-                    android:id="@+id/teacher"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginStart="20dp"
-                    android:buttonTint="@color/colorPrimary"
-                    android:fontFamily="sans-serif-medium"
-                    android:text="Teacher"
-                    android:textAlignment="center"
-                    android:textColor="#FFF"
-                    android:textSize="20sp" />
-
-            </RadioGroup>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
@@ -134,12 +99,7 @@
                     android:inputType="phone"
                     android:textColor="#FFF"
                     android:textColorHint="#999"
-                    android:textSize="20sp"
-                    app:layout_constraintBottom_toTopOf="@+id/email_tf"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.488"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/fullname_tf" />
+                    android:textSize="20sp" />
 
             </LinearLayout>
 
@@ -159,12 +119,7 @@
                 android:textAlignment="center"
                 android:textColor="#FFF"
                 android:textColorHint="#999"
-                android:textSize="20sp"
-                app:layout_constraintBottom_toTopOf="@+id/number_tf"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.488"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView" />
+                android:textSize="20sp" />
 
             <EditText
                 android:id="@+id/email_tf"
@@ -181,12 +136,7 @@
                 android:textAlignment="center"
                 android:textColor="#FFF"
                 android:textColorHint="#999"
-                android:textSize="20sp"
-                app:layout_constraintBottom_toTopOf="@+id/password_tf"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.488"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/number_tf" />
+                android:textSize="20sp" />
 
             <EditText
                 android:id="@+id/password_tf"
@@ -204,12 +154,7 @@
                 android:textAlignment="center"
                 android:textColor="#FFF"
                 android:textColorHint="#999"
-                android:textSize="20sp"
-                app:layout_constraintBottom_toTopOf="@+id/reenter_password_tf"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.488"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/email_tf" />
+                android:textSize="20sp" />
 
             <EditText
                 android:id="@+id/reenter_password_tf"
@@ -227,12 +172,7 @@
                 android:textAlignment="center"
                 android:textColor="#FFF"
                 android:textColorHint="#999"
-                android:textSize="20sp"
-                app:layout_constraintBottom_toTopOf="@+id/register_btn"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.488"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/password_tf" />
+                android:textSize="20sp" />
 
         </LinearLayout>
 

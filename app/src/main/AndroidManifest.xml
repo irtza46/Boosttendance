@@ -96,7 +96,7 @@
             android:name=".login_registration_activities.registration_activities.MobileVerificationActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".StarterActivity"
+            android:name=".startup_activities.StarterActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".MainActivity"

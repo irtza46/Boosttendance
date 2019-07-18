@@ -2,33 +2,28 @@ package com.ilumastech.smart_attendance_system.login_registration_activities.reg
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.RadioGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.hbb20.CountryCodePicker;
 import com.ilumastech.smart_attendance_system.Database;
-import com.ilumastech.smart_attendance_system.MainActivity;
 import com.ilumastech.smart_attendance_system.Prompt;
 import com.ilumastech.smart_attendance_system.R;
+import com.ilumastech.smart_attendance_system.SASConstants;
+import com.ilumastech.smart_attendance_system.Tools;
 
 import java.util.Objects;
 
@@ -37,120 +32,69 @@ public class RegisterActivity extends AppCompatActivity {
     private static final String TAG = "RegisterActivity";
 
     private EditText fullName_tf, number_tf, email_tf, password_tf, rPassword_tf;
-    private RadioGroup type;
-
-    private FirebaseAuth firebaseAuth;
-    private Prompt prompt;
-
     private CountryCodePicker countryCodePicker;
+
+    private Prompt prompt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        init();
+    }
 
-        type = findViewById(R.id.type);
+    private void init() {
         fullName_tf = findViewById(R.id.fullname_tf);
         number_tf = findViewById(R.id.number_tf);
         email_tf = findViewById(R.id.email_tf);
         password_tf = findViewById(R.id.password_tf);
         rPassword_tf = findViewById(R.id.reenter_password_tf);
-
-        prompt = new Prompt(this);
-        firebaseAuth = FirebaseAuth.getInstance();
-
         countryCodePicker = findViewById(R.id.country_picker);
         countryCodePicker.registerCarrierNumberEditText(number_tf);
-    }
 
-    private boolean validateForm(String fullName, String number, String email, String password,
-                                 String repassword) {
-
-        if (TextUtils.isEmpty(fullName)) {
-            fullName_tf.setError("Required");
-            return false;
-        }
-
-        if (TextUtils.isEmpty(number)) {
-            number_tf.setError("Required");
-            return false;
-        }
-
-        if (TextUtils.isEmpty(email)) {
-            email_tf.setError("Required");
-            return false;
-        }
-
-        if (TextUtils.isEmpty(password)) {
-            password_tf.setError("Required");
-            return false;
-        }
-
-        if (TextUtils.isEmpty(repassword)) {
-            rPassword_tf.setError("Required");
-            return false;
-        }
-
-        return true;
+        prompt = new Prompt(this);
     }
 
     public void registerUser(View view) {
 
-        final String accType = (type.getCheckedRadioButtonId() == R.id.student) ?
-                "student" : "teacher";
+        // getting entered user details
         final String fullName = fullName_tf.getText().toString();
         final String number = countryCodePicker.getFullNumberWithPlus();
         final String email = email_tf.getText().toString();
         final String password = password_tf.getText().toString();
         final String repassword = rPassword_tf.getText().toString();
 
-        // validating if data has been input in the required data fields
+        // validating if all the required data is entered
         if (!validateForm(fullName, number, email, password, repassword))
             return;
 
-        // validating number
-        if (!countryCodePicker.isValidFullNumber()) {
-            number_tf.setError("Mobile number is not valid.\nPlease re-enter Mobile number.");
-            prompt.showFailureMessagePrompt("Mobile number is not valid.\nPlease re-enter Mobile number.");
-            return;
-        }
-
-        // verifying password
-        if (!password.equals(repassword)) {
-            password_tf.setError("Password doesn't match.\nPlease re-enter password.");
-            rPassword_tf.setError("Password doesn't match.\nPlease re-enter password.");
-            prompt.showFailureMessagePrompt("Password doesn't match.\nPlease re-enter password.");
-            return;
-        }
-
-        prompt.showProgress("Sign Up", "Registering...");
-
         // check if user don't exist with this number
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("users");
-        reference.addValueEventListener(new ValueEventListener() {
+        Database.getUserByMobileNumber(number).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                boolean found = false;
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    if (Objects.equals(snapshot.child("phoneNumber").getValue(), number)) {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (prompt != null)
-                    prompt.hideProgress();
-                if (found) {
+                // if given phone number is registered with an account
+                if (dataSnapshot.exists()) {
                     number_tf.setError("Mobile number is already registered with an email account.\n" +
                             "Please register using a different account mobile number.");
+
+                    // prompt user about mobile not registered.
                     prompt.showFailureMessagePrompt(
                             "Mobile number is already registered with an email account.\n" +
                                     "Please register using a different account mobile number.");
-                } else
-                    createAccount(email, password, accType, fullName, number);
+                }
 
-                Log.d(TAG, "Number Found: " + number + " Realtime " + found);
+                // if user with this mobile number already not registered
+                else
+                    createAccount(email, password, fullName, number);
+
+                // show short wait prompt
+                Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                    @Override
+                    public void run() {
+                        prompt.hidePrompt();
+                    }
+                });
             }
 
             @Override
@@ -159,83 +103,132 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    private void createAccount(final String email, String password, final String accType, final String fullName,
-                               final String number) {
+    private void createAccount(final String email, String password, final String fullName, final String number) {
 
         Log.d(TAG, "createAccount:" + email);
 
-        firebaseAuth.createUserWithEmailAndPassword(email, password)
+        // prompt user for registering account
+        prompt.showProgress("Sign Up", "Registering...");
+
+        // creating account using email and password
+        Database.getFirebaseAuthInstance().createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
+                        prompt.hideProgress();
+
+                        // if user account is created
                         if (task.isSuccessful()) {
                             Log.d(TAG, "createUserWithEmail:success");
 
-                            FirebaseUser user = firebaseAuth.getCurrentUser();
-                            if (user != null) {
+                            // getting user account
+                            FirebaseUser firebaseUser = Database.getUser();
 
-                                user.updateProfile(new UserProfileChangeRequest.Builder()
-                                        .setDisplayName(fullName).build());
-                                user.sendEmailVerification();
+                            // setting user account display name
+                            firebaseUser.updateProfile(new UserProfileChangeRequest.Builder().setDisplayName(fullName).build());
 
-                                // saving user info to database without number
-                                Database.createUser(user.getUid(),
-                                        accType, fullName, email, number);
-                            }
-                            startActivityForResult(new Intent(RegisterActivity.this,
-                                    MobileVerificationActivity.class)
-                                    .putExtra("number", number), 1);
-                        } else {
+                            // sending verification email to user
+                            firebaseUser.sendEmailVerification();
+
+                            // registering user in database without number
+                            Database.createUser(firebaseUser.getUid(), fullName, email, "");
+
+                            // show short wait prompt to user about account creation
+                            prompt.showSuccessMessagePrompt("Account created.");
+                            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                                @Override
+                                public void run() {
+                                    prompt.hidePrompt();
+                                }
+                            });
+
+                            // starting number verification activity
+                            startActivity(new Intent(RegisterActivity.this, MobileVerificationActivity.class)
+                                    .putExtra("number", number));
+                        }
+
+                        // if user account not created
+                        else {
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
 
-                            prompt.hideProgress();
-                            prompt.showFailureMessagePrompt("Account not created.\n" +
-                                    Objects.requireNonNull(task.getException()).getMessage());
+                            // prompt user about account creation failure and provide reason
+                            prompt.showFailureMessagePrompt("Account not created.\n" + Objects.requireNonNull(task.getException()).getMessage());
                         }
                     }
                 });
-
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    private boolean validateForm(String fullName, String number, String email, String password, String repassword) {
 
-        if (requestCode == 1 && resultCode == RESULT_OK) {
+        // if user has not entered mobile number
+        if (TextUtils.isEmpty(number)) {
+            number_tf.setError("Mobile number is required.");
+            return false;
+        }
 
-            prompt.showSuccessMessagePrompt("Account created.");
-            (new Handler()).postDelayed(new Runnable() {
+        // if user has not entered full name
+        if (TextUtils.isEmpty(fullName)) {
+            fullName_tf.setError("Full name is required.");
+            return false;
+        }
+
+        // if user has not entered email
+        if (TextUtils.isEmpty(email)) {
+            email_tf.setError("Email is required.");
+            return false;
+        }
+
+        // if user has not entered password
+        if (TextUtils.isEmpty(password)) {
+            password_tf.setError("Password is required.");
+            return false;
+        }
+
+        // if user has not re-entered password
+        if (TextUtils.isEmpty(repassword)) {
+            rPassword_tf.setError("Re-enter password is required.");
+            return false;
+        }
+
+        // validating number
+        if (!countryCodePicker.isValidFullNumber()) {
+            number_tf.setError("Mobile number is not valid.\nPlease re-enter Mobile number.");
+
+            // show short wait prompt to user about number invalid
+            prompt.showFailureMessagePrompt("Mobile number is not valid.\nPlease re-enter Mobile number.");
+            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
                 @Override
                 public void run() {
-
                     prompt.hidePrompt();
-                    prompt.showProgress("Login", "Login in...");
-                    (new Handler()).postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            prompt.hideProgress();
-                            startActivity(new Intent(
-                                    RegisterActivity.this,
-                                    MainActivity.class)
-                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
-                                            Intent.FLAG_ACTIVITY_CLEAR_TASK));
-
-                            RegisterActivity.this.finish();
-                        }
-                    }, 3000);
-
                 }
-            }, 2000);
+            });
+            return false;
         }
+
+        // verifying password
+        if (!password.equals(repassword)) {
+            password_tf.setError("Password doesn't match.\nPlease re-enter password.");
+            rPassword_tf.setError("Password doesn't match.\nPlease re-enter password.");
+
+            // show short wait prompt to user about passwords not match
+            prompt.showFailureMessagePrompt("Password doesn't match.\nPlease re-enter password.");
+            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                @Override
+                public void run() {
+                    prompt.hidePrompt();
+                }
+            });
+            return false;
+        }
+
+        return true;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (prompt != null) {
-            prompt.hideInputPrompt();
-            prompt = null;
-        }
+        Objects.requireNonNull(prompt).hidePrompt();
+        prompt = null;
     }
+
 }

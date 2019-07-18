@@ -15,7 +15,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
@@ -139,30 +138,20 @@ public class MobileLoginActivity extends AppCompatActivity {
         // if code has not been sent and code text view has is invisible
         else {
 
-            // if number entered is not valid according to the format of country selected
-            if (!countryCodePicker.isValidFullNumber()) {
-                number_tf.setError("Mobile number is invalid.\nPlease re-enter Mobile number.");
-
-                // show short wait prompt to user about mobile number is not valid
-                prompt.showFailureMessagePrompt("Mobile number is invalid.\nPlease re-enter Mobile number.");
-                Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
-                    @Override
-                    public void run() {
-                        prompt.hidePrompt();
-                    }
-                });
-                return;
-            }
-
             // getting entered mobile number
             final String number = countryCodePicker.getFullNumberWithPlus();
+
+            // validating entered mobile number
+            if (!validateNumber(number))
+                return;
 
             // check if user don't exist with this number
             Database.getUserByMobileNumber(number).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    prompt.hideProgress();
 
-                    // if user with this mobile number already registered
+                    // if user with this mobile number already not registered
                     if (!dataSnapshot.exists()) {
                         number_tf.setError("Mobile number is not registered with an email account.\n" +
                                 "Please register a new account with this mobile number or\n" +
@@ -208,20 +197,9 @@ public class MobileLoginActivity extends AppCompatActivity {
         // getting entered mobile number
         String number = countryCodePicker.getFullNumberWithPlus();
 
-        // if number entered is not valid according to the format of country selected
-        if (!countryCodePicker.isValidFullNumber()) {
-            number_tf.setError("Mobile number is invalid.\nPlease re-enter Mobile number.");
-
-            // show short wait prompt to user about mobile number is not valid
-            prompt.showFailureMessagePrompt("Mobile number is invalid.\nPlease re-enter Mobile number.");
-            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
-                @Override
-                public void run() {
-                    prompt.hidePrompt();
-                }
-            });
+        // validating entered mobile number
+        if (!validateNumber(number))
             return;
-        }
 
         Log.d(TAG, "resendCodeNumber:" + number);
 
@@ -238,18 +216,43 @@ public class MobileLoginActivity extends AppCompatActivity {
         });
     }
 
+    private boolean validateNumber(String number) {
+
+        // if nothing is entered in number field
+        if (TextUtils.isEmpty(number)) {
+            number_tf.setError("Number is required.");
+            return false;
+        }
+
+        // if number entered is not valid according to the format of country selected
+        if (!countryCodePicker.isValidFullNumber()) {
+            number_tf.setError("Mobile number is invalid.\nPlease re-enter Mobile number.");
+
+            // show short wait prompt to user about mobile number is not valid
+            prompt.showFailureMessagePrompt("Mobile number is invalid.\nPlease re-enter Mobile number.");
+            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                @Override
+                public void run() {
+                    prompt.hidePrompt();
+                }
+            });
+
+            return false;
+        }
+
+        return true;
+    }
+
     private void signInWithPhoneAuth(PhoneAuthCredential credential) {
 
         // prompt user for login in
         prompt.showProgress("Sign In", "Login in...");
 
         // authenticating phone number credential
-        FirebaseAuth.getInstance().signInWithCredential(credential)
+        Database.getFirebaseAuthInstance().signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-
-                        // dismissing progress prompt
                         prompt.hideProgress();
 
                         // if login was successful
@@ -312,4 +315,5 @@ public class MobileLoginActivity extends AppCompatActivity {
         Objects.requireNonNull(prompt).hidePrompt();
         prompt = null;
     }
+
 }
