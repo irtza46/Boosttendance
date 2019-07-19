@@ -4,40 +4,75 @@ import java.io.Serializable;
 
 public class ClassRoom implements Serializable {
 
-    private String className;
-    private String classId;
-    private String attendanceId;
+    private String class_Id;
+    private String class_Name;
+    private String u_Id;
+    private String attendance_Id;
+    private String email;
+    private String attendace_Date;
 
     public ClassRoom() {
     }
 
-    public ClassRoom(String className, String classId, String attendanceId) {
-        this.className = className;
-        this.classId = classId;
-        this.attendanceId = attendanceId;
+    public ClassRoom(String class_Id, String class_Name, String u_Id, String attendance_Id, String email) {
+        this.class_Id = class_Id;
+        this.class_Name = class_Name;
+        this.u_Id = u_Id;
+        this.attendance_Id = attendance_Id;
+        this.email = email;
     }
 
-    public String getAttendanceId() {
-        return attendanceId;
+    public ClassRoom(String class_Id, String class_Name, String attendace_Date) {
+        this.class_Id = class_Id;
+        this.class_Name = class_Name;
+        this.attendace_Date = attendace_Date;
     }
 
-    public void setAttendanceId(String attendanceId) {
-        this.attendanceId = attendanceId;
+    public String getClass_Id() {
+        return class_Id;
     }
 
-    public String getClassId() {
-        return classId;
+    public void setClass_Id(String class_Id) {
+        this.class_Id = class_Id;
     }
 
-    public void setClassId(String classId) {
-        this.classId = classId;
+    public String getClass_Name() {
+        return class_Name;
     }
 
-    public String getClassName() {
-        return className;
+    public void setClass_Name(String class_Name) {
+        this.class_Name = class_Name;
     }
 
-    public void setClassName(String className) {
-        this.className = className;
+    public String getU_Id() {
+        return u_Id;
+    }
+
+    public void setU_Id(String u_Id) {
+        this.u_Id = u_Id;
+    }
+
+    public String getAttendance_Id() {
+        return attendance_Id;
+    }
+
+    public void setAttendance_Id(String attendance_Id) {
+        this.attendance_Id = attendance_Id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getAttendace_Date() {
+        return attendace_Date;
+    }
+
+    public void setAttendace_Date(String attendace_Date) {
+        this.attendace_Date = attendace_Date;
     }
 }

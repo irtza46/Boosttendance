@@ -1,7 +1,6 @@
 package com.ilumastech.smart_attendance_system;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -19,8 +18,6 @@ import com.github.angads25.filepicker.view.FilePickerDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.opencsv.CSVReader;
 
@@ -28,9 +25,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class CreateClassActivity extends AppCompatActivity {
@@ -42,74 +37,146 @@ public class CreateClassActivity extends AppCompatActivity {
 
     private Prompt prompt;
 
-    private boolean fileOK;
-
     private List<String> studentsIds, studentsEmails;
+    private boolean fileSelected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_class);
+        init();
+    }
 
+    private void init() {
+
+        // setting toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
 
-        prompt = new Prompt(this);
-
         filename = findViewById(R.id.filename_tv);
         classname = findViewById(R.id.classname_tf);
 
-        fileOK = false;
+        // creating prompt instance to display prompts to user
+        prompt = new Prompt(this);
+
+        // for checking if students list file has been selected
+        fileSelected = false;
+    }
+
+    public void selectFile(View view) {
+
+        // setting file picker dialog properties
+        DialogProperties properties = new DialogProperties();
+        properties.root = new File(DialogConfigs.DEFAULT_DIR);
+        properties.error_dir = new File(DialogConfigs.DEFAULT_DIR);
+        properties.offset = new File(DialogConfigs.DEFAULT_DIR);
+        properties.extensions = new String[]{"csv"};
+        FilePickerDialog dialog = new FilePickerDialog(this, properties);
+        dialog.setTitle("Select student file (csv)");
+        dialog.setDialogSelectionListener(new DialogSelectionListener() {
+            @Override
+            public void onSelectedFilePaths(String[] files) {
+
+                // to read students ID and email
+                studentsIds = new ArrayList<>();
+                studentsEmails = new ArrayList<>();
+
+                try {
+
+                    // opening csv file to read data
+                    CSVReader reader = new CSVReader(new FileReader(files[0]));
+
+                    // skipping header row
+                    String[] columns = reader.readNext();
+
+                    // reading data
+                    while ((columns = reader.readNext()) != null) {
+
+                        // if each row has student id and email
+                        if (!columns[0].isEmpty() && !columns[1].isEmpty()) {
+                            studentsIds.add(columns[0]);
+                            studentsEmails.add(columns[1]);
+                        }
+
+                        // if their exist a row where a student id or email
+                        else
+                            throw new IOException("Some data is missing");
+                    }
+
+                    // displaying selected file name
+                    filename.setText(files[0].substring(files[0].lastIndexOf("/") + 1));
+
+                    // setting check to true as file has been selected
+                    fileSelected = true;
+                } catch (IOException e) {
+
+                    // showing short prompt to user if file format is not correct or some data is missing
+                    prompt.showFailureMessagePrompt("File is not in correct format of some data is missing.");
+                    SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                        @Override
+                        public void run() {
+                            prompt.hidePrompt();
+                        }
+                    });
+                }
+            }
+        });
+
+        // displaying file picker dialog to user
+        dialog.show();
     }
 
     public void createClass(View view) {
 
+        // getting entered class name
         final String className = classname.getText().toString();
 
+        // checking if entered class name is not empty
         if (TextUtils.isEmpty(className)) {
-            classname.setError("Required");
+            classname.setError("Class name is required.");
             return;
         }
 
-        if (fileOK) {
+        // if file is selected by user
+        if (fileSelected) {
 
             final String teacherId = FirebaseAuth.getInstance().getUid();
 
             // check if class with same name already exists
-            FirebaseDatabase.getInstance().getReference("classes")
-                    .orderByChild("teacherId").equalTo(teacherId)
+            Database.getClassByU_ID(teacherId)
                     .addListenerForSingleValueEvent(new ValueEventListener() {
-
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                             // if this teacher has not created any class before
-                            if (!dataSnapshot.exists()) {
+                            if (!dataSnapshot.exists())
+                                addClass(className, teacherId);
 
-                                addClass(teacherId);
-                            } else {
+                            // if this teacher has already created any class
+                            else {
 
                                 // checking for all classes created by current teacher uid
                                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
-                                    // if class with this name has not been created before
-                                    if (!snapshot.exists() ||
-                                            !String.valueOf(snapshot.child("className").getValue())
-                                                    .equalsIgnoreCase(className)) {
+                                    // if class with this name has been created before
+                                    String alreadyClassName = (String) snapshot.child(Database.CLASS_NAME).getValue();
+                                    if (Objects.requireNonNull(alreadyClassName).equalsIgnoreCase(className)) {
 
-                                        addClass(teacherId);
-                                    } else {
-                                        prompt.showFailureMessagePrompt("Class with same name already exists.");
-                                        new Handler().postDelayed(new Runnable() {
+                                        // showing prompt to teacher about class with same name already exists
+                                        prompt.showFailureMessagePrompt("Class with same name already exists");
+                                        SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
                                             @Override
                                             public void run() {
-                                                if (prompt != null)
-                                                    prompt.hidePrompt();
+                                                prompt.hidePrompt();
                                             }
-                                        }, 3000);
+                                        });
+                                        return;
                                     }
                                 }
+
+                                // if no class exists already with the entered class name
+                                addClass(className, teacherId);
                             }
                         }
 
@@ -117,123 +184,48 @@ public class CreateClassActivity extends AppCompatActivity {
                         public void onCancelled(@NonNull DatabaseError databaseError) {
                         }
                     });
-        } else {
-            prompt.showFailureMessagePrompt("Please select student list file first.");
-            new Handler().postDelayed(new Runnable() {
+        }
+
+        // if user have not selected any file already
+        else {
+
+            // showing short prompt to user about selecting a file first
+            prompt.showFailureMessagePrompt("Please select student list file to enrolled in class");
+            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
                 @Override
                 public void run() {
                     prompt.hidePrompt();
                 }
-            }, 3000);
+            });
         }
     }
 
-    private void addClass(String teacherId) {
+    private void addClass(String className, String teacherId) {
 
-        final DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-        final String classId = reference.push().getKey();
+        final String classId = Database.getUniqueID();
         Log.d(TAG, "Creating class classId: " + classId);
 
-        if (classId != null) {
-            final Map<String, String> newClass = new HashMap<>();
-            newClass.put("className", classname.getText().toString());
-            newClass.put("teacherId", Objects.requireNonNull(
-                    teacherId));
+        // creating new class in database
+        Database.addNewClass(classId, className, teacherId);
 
-            reference.child("classes/" + classId).setValue(newClass);
-            reference.child("attendances/" + classId).setValue("");
+        // updating created classes of user in database
+        Database.updateCreatedClassesByU_ID(teacherId, classId);
 
-            // removing teacher id after storing
-            newClass.remove("teacherId");
+        // adding students in class
+        for (int i = 0; i < studentsEmails.size(); i++)
+            Database.addJoinClass(classId, studentsEmails.get(i), studentsIds.get(i));
 
-            reference.child("users/" + teacherId + "/classes/created/" + classId)
-                    .setValue(newClass);
-
-            // adding students
-            for (int i = 0; i < studentsEmails.size(); i++) {
-
-                final String email = studentsEmails.get(i);
-                final String attendanceId = studentsIds.get(i);
-
-                reference.child("users").orderByChild("email").equalTo(email)
-                        .addListenerForSingleValueEvent(new ValueEventListener() {
-
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                                if (dataSnapshot.exists()) {
-                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-
-                                        String uid = snapshot.getKey();
-
-                                        newClass.put("attendanceId", attendanceId);
-                                        reference.child("users/" + uid + "/classes/joined")
-                                                .child(classId).setValue(newClass);
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-                            }
-                        });
-            }
-
-            prompt.showSuccessMessagePrompt("Class has been created.");
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    prompt.hidePrompt();
-                    CreateClassActivity.this.finish();
-                }
-            }, 3000);
-        }
-
-        Log.d(TAG, "Class created classId: " + classId);
-    }
-
-    public void selectFile(View view) {
-
-        DialogProperties properties = new DialogProperties();
-        properties.root = new File(DialogConfigs.DEFAULT_DIR);
-        properties.error_dir = new File(DialogConfigs.DEFAULT_DIR);
-        properties.offset = new File(DialogConfigs.DEFAULT_DIR);
-        properties.extensions = new String[]{"csv"};
-
-        FilePickerDialog dialog = new FilePickerDialog(this, properties);
-        dialog.setTitle("Select student file (csv)");
-        dialog.setDialogSelectionListener(new DialogSelectionListener() {
+        // show short wait prompt to user that class has been created
+        prompt.showSuccessMessagePrompt("Class has been created.");
+        SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
             @Override
-            public void onSelectedFilePaths(String[] files) {
-
-                studentsIds = new ArrayList<>();
-                studentsEmails = new ArrayList<>();
-
-                try {
-                    CSVReader reader = new CSVReader(new FileReader(files[0]));
-
-                    String[] columns = reader.readNext();
-                    while ((columns = reader.readNext()) != null) {
-                        studentsIds.add(columns[0]);
-                        studentsEmails.add(columns[1]);
-                    }
-
-                    filename.setText(files[0].substring(files[0].lastIndexOf("/") + 1));
-                    fileOK = true;
-                } catch (IOException e) {
-                    prompt.showFailureMessagePrompt(
-                            "File is not supported or not in correct format!");
-                    (new Handler()).postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            prompt.hidePrompt();
-                        }
-                    }, 3000);
-
-                }
+            public void run() {
+                prompt.hidePrompt();
+                CreateClassActivity.this.finish();
             }
         });
-        dialog.show();
+
+        Log.d(TAG, "Class created classId: " + classId);
     }
 
     @Override
@@ -245,10 +237,8 @@ public class CreateClassActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (prompt != null) {
-            prompt.hideInputPrompt();
-            prompt = null;
-        }
+        Objects.requireNonNull(prompt).hidePrompt();
+        prompt = null;
     }
 
 }

@@ -2,7 +2,6 @@ package com.ilumastech.smart_attendance_system.login_registration_activities.reg
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -23,7 +22,7 @@ import com.ilumastech.smart_attendance_system.Database;
 import com.ilumastech.smart_attendance_system.Prompt;
 import com.ilumastech.smart_attendance_system.R;
 import com.ilumastech.smart_attendance_system.SASConstants;
-import com.ilumastech.smart_attendance_system.Tools;
+import com.ilumastech.smart_attendance_system.SASTools;
 
 import java.util.Objects;
 
@@ -52,6 +51,7 @@ public class RegisterActivity extends AppCompatActivity {
         countryCodePicker = findViewById(R.id.country_picker);
         countryCodePicker.registerCarrierNumberEditText(number_tf);
 
+        // creating prompt instance to display prompts to user
         prompt = new Prompt(this);
     }
 
@@ -60,7 +60,7 @@ public class RegisterActivity extends AppCompatActivity {
         // getting entered user details
         final String fullName = fullName_tf.getText().toString();
         final String number = countryCodePicker.getFullNumberWithPlus();
-        final String email = email_tf.getText().toString();
+        final String email = email_tf.getText().toString().toLowerCase();
         final String password = password_tf.getText().toString();
         final String repassword = rPassword_tf.getText().toString();
 
@@ -89,7 +89,7 @@ public class RegisterActivity extends AppCompatActivity {
                     createAccount(email, password, fullName, number);
 
                 // show short wait prompt
-                Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
                     @Override
                     public void run() {
                         prompt.hidePrompt();
@@ -135,12 +135,6 @@ public class RegisterActivity extends AppCompatActivity {
 
                             // show short wait prompt to user about account creation
                             prompt.showSuccessMessagePrompt("Account created.");
-                            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
-                                @Override
-                                public void run() {
-                                    prompt.hidePrompt();
-                                }
-                            });
 
                             // starting number verification activity
                             startActivity(new Intent(RegisterActivity.this, MobileVerificationActivity.class)
@@ -161,31 +155,31 @@ public class RegisterActivity extends AppCompatActivity {
     private boolean validateForm(String fullName, String number, String email, String password, String repassword) {
 
         // if user has not entered mobile number
-        if (TextUtils.isEmpty(number)) {
+        if (number.isEmpty()) {
             number_tf.setError("Mobile number is required.");
             return false;
         }
 
         // if user has not entered full name
-        if (TextUtils.isEmpty(fullName)) {
+        if (fullName.isEmpty()) {
             fullName_tf.setError("Full name is required.");
             return false;
         }
 
         // if user has not entered email
-        if (TextUtils.isEmpty(email)) {
+        if (email.isEmpty()) {
             email_tf.setError("Email is required.");
             return false;
         }
 
         // if user has not entered password
-        if (TextUtils.isEmpty(password)) {
+        if (password.isEmpty()) {
             password_tf.setError("Password is required.");
             return false;
         }
 
         // if user has not re-entered password
-        if (TextUtils.isEmpty(repassword)) {
+        if (repassword.isEmpty()) {
             rPassword_tf.setError("Re-enter password is required.");
             return false;
         }
@@ -196,7 +190,7 @@ public class RegisterActivity extends AppCompatActivity {
 
             // show short wait prompt to user about number invalid
             prompt.showFailureMessagePrompt("Mobile number is not valid.\nPlease re-enter Mobile number.");
-            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
                 @Override
                 public void run() {
                     prompt.hidePrompt();
@@ -212,7 +206,7 @@ public class RegisterActivity extends AppCompatActivity {
 
             // show short wait prompt to user about passwords not match
             prompt.showFailureMessagePrompt("Password doesn't match.\nPlease re-enter password.");
-            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
                 @Override
                 public void run() {
                     prompt.hidePrompt();

@@ -22,12 +22,6 @@ public class LoginActivity extends AppCompatActivity {
         checkUser();
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        checkUser();
-    }
-
     public void registerScreen(View view) {
         startActivity(new Intent(this, RegisterActivity.class));
     }
@@ -43,7 +37,7 @@ public class LoginActivity extends AppCompatActivity {
     public void checkUser() {
 
         // if user has already logged in
-        if (Database.getFirebaseAuthInstance().getCurrentUser() != null) {
+        if (Database.getUser() != null) {
 
 //            if (CheckUser.checkIfUserExistThroughNumber(number))
 //                startActivity(new Intent(this, MobileVerificationActivity.class)

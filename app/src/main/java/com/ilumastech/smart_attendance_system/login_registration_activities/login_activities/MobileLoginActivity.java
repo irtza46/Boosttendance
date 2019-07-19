@@ -27,7 +27,7 @@ import com.ilumastech.smart_attendance_system.MainActivity;
 import com.ilumastech.smart_attendance_system.Prompt;
 import com.ilumastech.smart_attendance_system.R;
 import com.ilumastech.smart_attendance_system.SASConstants;
-import com.ilumastech.smart_attendance_system.Tools;
+import com.ilumastech.smart_attendance_system.SASTools;
 import com.ilumastech.smart_attendance_system.login_registration_activities.registration_activities.RegisterActivity;
 
 import java.util.Objects;
@@ -89,7 +89,7 @@ public class MobileLoginActivity extends AppCompatActivity {
                     prompt.showFailureMessagePrompt("Login not successful\n" + e.getMessage());
 
                 // show long wait prompt
-                Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
+                SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
                     @Override
                     public void run() {
                         prompt.hidePrompt();
@@ -118,7 +118,7 @@ public class MobileLoginActivity extends AppCompatActivity {
     public void authenticate(View view) {
 
         // if code has been sent and code text view has been displayed
-        if (c_resend.getVisibility() != View.GONE) {
+        if (c_resend.getVisibility() == View.VISIBLE) {
 
             // validating if code has been input in the required data fields
             if (TextUtils.isEmpty(code_tf.getText())) {
@@ -128,7 +128,6 @@ public class MobileLoginActivity extends AppCompatActivity {
 
             // getting entered code
             String code = code_tf.getText().toString();
-
             Log.d(TAG, "loginAccountWithCode:" + code);
 
             // verifying the providing code and login
@@ -144,6 +143,9 @@ public class MobileLoginActivity extends AppCompatActivity {
             // validating entered mobile number
             if (!validateNumber(number))
                 return;
+
+            // showing prompt to user about progress
+            prompt.showProgress("Authenticating", "Please wait...");
 
             // check if user don't exist with this number
             Database.getUserByMobileNumber(number).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -177,7 +179,7 @@ public class MobileLoginActivity extends AppCompatActivity {
                     }
 
                     // show short wait prompt
-                    Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                    SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
                         @Override
                         public void run() {
                             prompt.hidePrompt();
@@ -208,7 +210,7 @@ public class MobileLoginActivity extends AppCompatActivity {
 
         // show short wait prompt to user about code has been sent again
         prompt.showSuccessMessagePrompt("Code has been sent again through SMS");
-        Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+        SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
             @Override
             public void run() {
                 prompt.hidePrompt();
@@ -230,13 +232,12 @@ public class MobileLoginActivity extends AppCompatActivity {
 
             // show short wait prompt to user about mobile number is not valid
             prompt.showFailureMessagePrompt("Mobile number is invalid.\nPlease re-enter Mobile number.");
-            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
                 @Override
                 public void run() {
                     prompt.hidePrompt();
                 }
             });
-
             return false;
         }
 
@@ -263,12 +264,10 @@ public class MobileLoginActivity extends AppCompatActivity {
                             // prompt show for login successful
                             prompt.showSuccessMessagePrompt("Login successful");
 
-                            // wait 2 second before starting main activity
-                            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                            // show short wait prompt before starting main activity
+                            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
                                         @Override
                                         public void run() {
-
-                                            // dismissing prompt
                                             prompt.hidePrompt();
 
                                             // starting main activity
@@ -298,7 +297,7 @@ public class MobileLoginActivity extends AppCompatActivity {
                                 prompt.showFailureMessagePrompt("Login not successful\n" + Objects.requireNonNull(task.getException()).getMessage());
 
                             // show prompt for 3 seconds
-                            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
+                            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
                                 @Override
                                 public void run() {
                                     prompt.hidePrompt();

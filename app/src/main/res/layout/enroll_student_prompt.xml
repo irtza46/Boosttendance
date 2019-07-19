@@ -15,7 +15,7 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_centerInParent="true"
-            android:background="@drawable/ic_success" />
+            android:background="@drawable/logo" />
     </RelativeLayout>
 
     <TextView
@@ -23,19 +23,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:text="Success"
+        android:text="Enroll new student"
         android:textAlignment="center"
         android:textColor="@color/colorPrimary"
         android:textAppearance="@style/TextAppearance.AppCompat.Headline" />
-
-    <ProgressBar
-        android:id="@+id/prompt_progress"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:indeterminate="true"
-        android:minWidth="50dp"
-        android:minHeight="50dp" />
 
     <TextView
         android:id="@+id/prompt_message"
@@ -45,7 +36,32 @@
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="10dp"
         android:textColor="#000"
-        android:text="Prompt Message"
+        android:text="Enter student details"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+    <EditText
+        android:id="@+id/student_id"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginStart="20dp"
+        android:background="@drawable/tf_background"
+        android:layout_marginEnd="20dp"
+        android:hint="Student ID"
+        android:layout_marginBottom="20dp"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+    <EditText
+        android:id="@+id/student_email"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginStart="20dp"
+        android:background="@drawable/tf_background"
+        android:layout_marginEnd="20dp"
+        android:hint="Student Email"
+        android:inputType="textEmailAddress"
+        android:layout_marginBottom="20dp"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
@@ -65,7 +81,7 @@
             android:layout_marginEnd="20dp"
             android:layout_marginBottom="20dp"
             android:layout_weight="1"
-            android:text="OK"
+            android:text="Enroll"
             android:textAlignment="center" />
 
         <Button

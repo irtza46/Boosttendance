@@ -52,18 +52,16 @@ public class MainActivity extends AppCompatActivity {
         drawerLayout.addDrawerListener(drawerToggle);
         drawerToggle.syncState();
 
+
+        NavigationView navigationView = findViewById(R.id.nav_view);
         // creating navigation menu item select listener
-        NavigationView.OnNavigationItemSelectedListener selectedListener = new NavigationView.OnNavigationItemSelectedListener() {
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 navigationMenu(menuItem.getItemId());
                 return true;
             }
-        };
-
-        // setting navigation menu properties
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(selectedListener);
+        });
 
         // setting navigation header properties
         View navigationHeader = navigationView.getHeaderView(0);
@@ -76,82 +74,70 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                // getting classroom details
-                ClassRoom classRoom = (ClassRoom) parent.getItemAtPosition(position);
-
-                if (bottomNavigationView.getSelectedItemId() == R.id.joined_classes)
-                    startActivity(new Intent(MainActivity.this,
-                            MarkAttendanceActivity.class).putExtra("classRoom", classRoom));
-
-                else
-                    startActivity(new Intent(MainActivity.this,
-                            ClassDetailsActivity.class).putExtra("classRoom", classRoom));
+                viewClass(parent, position);
             }
         });
 
+        // created joined and created classes arrays adapter
         joinedClassArrayAdapter = new ClassArrayAdapter(this, R.layout.class_card);
         createdClassArrayAdapter = new ClassArrayAdapter(this, R.layout.class_card);
-//        Database.getJoinedClasses(user.getUid(), joinedClassArrayAdapter);
-//        Database.getCreatedClasses(user.getUid(), createdClassArrayAdapter);
+        Database.getJoinedClasses(joinedClassArrayAdapter);
+        Database.getCreatedClasses(createdClassArrayAdapter);
+
+        // displaying joined classes by default
         listView.setAdapter(joinedClassArrayAdapter);
 
-        //TODO        listView.setTextFilterEnabled(true);
-        //editText.addTextChangedListener(new TextWatcher() {
-        //
-        //            public void onTextChanged(CharSequence arg0, int arg1, int arg2,
-        //                    int arg3) {
-        //
-        //            }
-        //
-        //            public void beforeTextChanged(CharSequence arg0, int arg1,
-        //                    int arg2, int arg3) {
-        //
-        //            }
-        //
-        //            public void afterTextChanged(Editable arg0) {
-        //                MyActivityName.this.adapter.getFilter().filter(arg0);
-        //
-        //            }
-        //        });
-
+        // bottom navigation view properties
         bottomNavigationView = findViewById(R.id.bottom_nav_menu);
         bottomNavigationView.setSelectedItemId(R.id.joined_classes);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
+                // if joined classes list is selected
                 if (menuItem.getItemId() == R.id.joined_classes) {
                     listView.setAdapter(joinedClassArrayAdapter);
                     return true;
                 }
 
+                // if created classes list is selected
                 if (menuItem.getItemId() == R.id.created_classes) {
-
                     listView.setAdapter(createdClassArrayAdapter);
                     return true;
                 }
-
                 return false;
             }
         });
 
+        // creating prompt instance to display prompts to user
         prompt = new Prompt(this);
-    }
-
-    public void searchClass(View view) {
-        startActivity(new Intent(this, SearchClassesActivity.class));
     }
 
     public void createClass(View view) {
         startActivity(new Intent(this, CreateClassActivity.class));
     }
 
+    private void viewClass(AdapterView<?> parent, int position) {
+
+        // getting classroom details
+        ClassRoom classRoom = (ClassRoom) parent.getItemAtPosition(position);
+
+        // if it's a joined class
+        if (bottomNavigationView.getSelectedItemId() == R.id.joined_classes)
+            startActivity(new Intent(MainActivity.this, MarkAttendanceActivity.class)
+                    .putExtra("classRoom", classRoom));
+
+            // if it's a created class
+        else
+            startActivity(new Intent(MainActivity.this, ClassDetailsActivity.class)
+                    .putExtra("classRoom", classRoom));
+    }
+
     private void navigationMenu(int itemId) {
 
         // getting navigation menu selected item id
         if (itemId == R.id.profile)
-            startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+            startActivity(new Intent(MainActivity.this, AboutActivity.class));
 
             // if user choose to logout
         else if (itemId == R.id.logout) {
@@ -198,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
         if (drawerLayout.isDrawerOpen(GravityCompat.START))
             drawerLayout.closeDrawer(GravityCompat.START);
 
-        // if navigation menu is open then close it
+            // if navigation menu is open then close it
         else {
 
             // show prompt to user to choose if user wants to exit application

@@ -111,18 +111,6 @@
             app:menu_showShadow="true">
 
             <com.github.clans.fab.FloatingActionButton
-                android:id="@+id/search_class"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="searchClass"
-                android:src="@drawable/ic_search_white_24dp"
-                app:fab_colorNormal="@color/colorAccent"
-                app:fab_colorPressed="@color/colorPrimaryDark"
-                app:fab_colorRipple="@color/colorPrimaryDark"
-                app:fab_label="Search Class"
-                app:fab_size="normal" />
-
-            <com.github.clans.fab.FloatingActionButton
                 android:id="@+id/create_class"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

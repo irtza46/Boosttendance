@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.ilumastech.smart_attendance_system.R;
 import com.ilumastech.smart_attendance_system.SASConstants;
-import com.ilumastech.smart_attendance_system.Tools;
+import com.ilumastech.smart_attendance_system.SASTools;
 import com.ilumastech.smart_attendance_system.login_registration_activities.LoginActivity;
 
 public class SplashScreen extends AppCompatActivity {
@@ -26,8 +26,9 @@ public class SplashScreen extends AppCompatActivity {
         animation.setStartOffset(1000);
         logo.startAnimation(animation);
 
-        // 2 second wait before starting login screen
-        Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+        // short wait before starting login screen
+        SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+            @Override
             public void run() {
 
                 // starting login activity

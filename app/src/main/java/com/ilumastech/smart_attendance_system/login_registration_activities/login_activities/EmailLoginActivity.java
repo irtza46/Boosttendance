@@ -2,7 +2,6 @@ package com.ilumastech.smart_attendance_system.login_registration_activities.log
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -18,7 +17,7 @@ import com.ilumastech.smart_attendance_system.MainActivity;
 import com.ilumastech.smart_attendance_system.Prompt;
 import com.ilumastech.smart_attendance_system.R;
 import com.ilumastech.smart_attendance_system.SASConstants;
-import com.ilumastech.smart_attendance_system.Tools;
+import com.ilumastech.smart_attendance_system.SASTools;
 import com.ilumastech.smart_attendance_system.login_registration_activities.registration_activities.RegisterActivity;
 
 import java.util.Objects;
@@ -37,7 +36,6 @@ public class EmailLoginActivity extends AppCompatActivity {
     }
 
     private void init() {
-
         email_tf = findViewById(R.id.email_tf);
         password_tf = findViewById(R.id.password_tf);
     }
@@ -73,12 +71,11 @@ public class EmailLoginActivity extends AppCompatActivity {
 
                         // if login was successful
                         if (task.isSuccessful()) {
-
                             Log.d(TAG, "loginWithEmail:success");
 
                             // show short wait prompt for login successful
                             prompt.showSuccessMessagePrompt("Login successful");
-                            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
                                         @Override
                                         public void run() {
                                             prompt.hidePrompt();
@@ -96,12 +93,11 @@ public class EmailLoginActivity extends AppCompatActivity {
 
                         // if login was not successful
                         else {
-
                             Log.w(TAG, "loginWithEmail:failure", task.getException());
 
                             // show long wait prompt to user about login failure and provide the reason
                             prompt.showFailureMessagePrompt("Login not successful\n" + Objects.requireNonNull(task.getException()).getMessage());
-                            Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
+                            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
                                 @Override
                                 public void run() {
                                     prompt.hidePrompt();
@@ -115,13 +111,13 @@ public class EmailLoginActivity extends AppCompatActivity {
     private boolean validateInputs(String email, String password) {
 
         // if nothing is entered in email field
-        if (TextUtils.isEmpty(email)) {
+        if (email.isEmpty()) {
             email_tf.setError("Email is required.");
             return false;
         }
 
         // if nothing is entered in password field
-        if (TextUtils.isEmpty(password)) {
+        if (password.isEmpty()) {
             password_tf.setError("Password is required.");
             return false;
         }

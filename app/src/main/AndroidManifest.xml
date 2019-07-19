@@ -4,27 +4,12 @@
     package="com.ilumastech.smart_attendance_system">
 
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
-
-    <uses-permission
-        android:name="android.permission.ACCESS_FINE_LOCATION"
-        android:required="true" />
-    <uses-permission
-        android:name="android.permission.ACCESS_NETWORK_STATE"
-        android:required="true" />
-    <uses-permission
-        android:name="android.permission.ACCESS_COARSE_LOCATION"
-        android:required="true" />
-    <uses-permission
-        android:name="android.permission.ACCESS_WIFI_STATE"
-        android:required="true" />
-    <uses-permission
-        android:name="android.permission.CHANGE_WIFI_STATE"
-        android:required="true" />
-    <uses-permission
-        android:name="android.permission.INTERNET"
-        android:required="true" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -35,14 +20,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".AttendanceHistoryActivity" />
-        <activity android:name=".AttendanceSessionActivity" />
-        <activity android:name=".ClassDetailsActivity" />
-        <activity android:name=".MarkAttendanceActivity" />
-        <activity
-            android:name=".CreateClassActivity"
-            android:windowSoftInputMode="adjustPan" />
-        <activity android:name=".SearchClassesActivity" />
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
@@ -53,7 +30,6 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="fcm_default_channel" />
-
         <service
             android:name=".BoosttendanceMessageService"
             android:exported="false">
@@ -63,15 +39,6 @@
         </service>
 
         <activity
-            android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"
-            android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.ilumastech.smart_attendance_system.MainActivity" />
-        </activity>
-        <activity android:name=".AboutActivity" />
-        <activity
             android:name=".startup_activities.SplashScreen"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -80,6 +47,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".AboutActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".login_registration_activities.registration_activities.RegisterActivity"
             android:screenOrientation="portrait" />
@@ -102,6 +73,20 @@
             android:name=".MainActivity"
             android:alwaysRetainTaskState="true"
             android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ClassDetailsActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".MarkAttendanceActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".CreateClassActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" />
+
     </application>
 
 </manifest>

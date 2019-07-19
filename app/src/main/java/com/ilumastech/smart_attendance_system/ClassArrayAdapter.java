@@ -15,11 +15,10 @@ import java.util.Objects;
 
 public class ClassArrayAdapter extends ArrayAdapter<ClassRoom> {
 
-    private static final String TAG = "ClassArrayAdapter";
     private List<ClassRoom> classRoomList = new ArrayList<>();
 
-    ClassArrayAdapter(Context context, int textViewResourceId) {
-        super(context, textViewResourceId);
+    ClassArrayAdapter(Context context, int i) {
+        super(context, i);
     }
 
     @Override
@@ -41,22 +40,41 @@ public class ClassArrayAdapter extends ArrayAdapter<ClassRoom> {
     @NonNull
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-        View row = convertView;
+        View view = convertView;
         ClassViewHolder viewHolder;
-        if (row == null) {
-            LayoutInflater inflater = (LayoutInflater) this.getContext().getSystemService(
-                    Context.LAYOUT_INFLATER_SERVICE);
-            row = inflater.inflate(R.layout.class_card, parent, false);
+
+        // if view is not created already
+        if (view == null) {
+
+            // setting layout of view
+            LayoutInflater inflater = (LayoutInflater) this.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            view = inflater.inflate(R.layout.class_card, parent, false);
+
+            // creating view holder
             viewHolder = new ClassViewHolder();
-            viewHolder.class_name = row.findViewById(R.id.class_name);
-            viewHolder.attendance_id = row.findViewById(R.id.attendance_id);
-            row.setTag(viewHolder);
-        } else
-            viewHolder = (ClassViewHolder) row.getTag();
-        ClassRoom ClassRoom = getItem(position);
-        viewHolder.class_name.setText(Objects.requireNonNull(ClassRoom).getClassName());
-        viewHolder.attendance_id.setText(Objects.requireNonNull(ClassRoom).getAttendanceId());
-        return row;
+            viewHolder.class_name = view.findViewById(R.id.class_name);
+            viewHolder.attendance_id = view.findViewById(R.id.attendance_id);
+
+            // setting view tag
+            view.setTag(viewHolder);
+        }
+
+        // if view is already created
+        else
+            viewHolder = (ClassViewHolder) view.getTag();
+
+        // getting class room
+        ClassRoom classRoom = getItem(position);
+        viewHolder.class_name.setText(Objects.requireNonNull(classRoom).getClass_Name());
+
+        // if attendance date is empty
+        if (classRoom.getAttendace_Date() == null)
+            viewHolder.attendance_id.setText(Objects.requireNonNull(classRoom).getAttendance_Id());
+
+        // if attendance date is not empty
+        else
+            viewHolder.attendance_id.setText(Objects.requireNonNull(classRoom).getAttendace_Date());
+        return view;
     }
 
     private static class ClassViewHolder {

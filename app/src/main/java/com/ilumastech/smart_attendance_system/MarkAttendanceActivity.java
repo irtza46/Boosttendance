@@ -2,12 +2,11 @@ package com.ilumastech.smart_attendance_system;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
@@ -21,13 +20,13 @@ import androidx.core.content.ContextCompat;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Objects;
 
 public class MarkAttendanceActivity extends AppCompatActivity {
 
@@ -41,80 +40,34 @@ public class MarkAttendanceActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mark_attendance);
+        init();
+    }
 
+    private void init() {
+
+        // setting toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
 
-        prompt = new Prompt(this);
-
+        // getting classroom object
         classRoom = (ClassRoom) getIntent().getSerializableExtra("classRoom");
 
-        ((TextView) findViewById(R.id.class_name)).setText(classRoom.getClassName());
-        ((TextView) findViewById(R.id.attendance_id)).setText(classRoom.getAttendanceId());
-//TODO        ((TextView) findViewById(R.id.teacher_email)).setText(classRoom.getTeacherEmail());
-    }
+        // setting class name
+        ((TextView) findViewById(R.id.class_name)).setText(classRoom.getClass_Name());
 
-//    public void updateAttendanceID(View view) {
-//
-//        Log.d(TAG, "updateAttendanceID called");
-//
-//        prompt.showInputMessagePrompt("Update attendance ID", "Enter attendance ID",
-//                InputType.TYPE_CLASS_TEXT, "Update", "Cancel");
-//
-//        prompt.getPrompt_input().setText(classRoom.getAttendanceId());
-//        prompt.setOkButtonListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//                final String newAttendanceId = prompt.getPrompt_input().getText().toString();
-//
-//                //Database.updateAttendanceId(user.getUid(), classRoom.getClassId(), newAttendanceId);
-//
-//                FirebaseDatabase.getInstance().getReference("users").child(user.getUid())
-//                        .child("classes").child("joined").child(classRoom.getClassId())
-//                        .child("attendanceId").setValue(newAttendanceId)
-//                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                            @Override
-//                            public void onSuccess(Void aVoid) {
-//
-//                                attendanceId.setText(newAttendanceId);
-//                                classRoom.setAttendanceId(newAttendanceId);
-//                                Log.d(TAG, "Attendance Id updated: " +
-//                                        classRoom.getClassId() + " : " + newAttendanceId);
-//                            }
-//                        });
-//                prompt.hideInputPrompt();
-//            }
-//        });
-//
-//    }
+        // setting attendance id of student
+        ((TextView) findViewById(R.id.attendance_id)).setText(classRoom.getAttendance_Id());
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (prompt != null) {
-            prompt.hideInputPrompt();
-            prompt = null;
-        }
-    }
+        // setting teacher email
+        ((TextView) findViewById(R.id.teacher_email)).setText(classRoom.getEmail());
 
-    private double getDistance(double latitude_1, double longitude_1,
-                               double latitude_2, double longitude_2) {
-
-        double rad_latitude_1 = (latitude_1 * Math.PI / 180.0);
-        double rad_latitude_2 = (latitude_2 * Math.PI / 180.0);
-        double rad_longitude_diff = ((longitude_1 - longitude_2) * Math.PI / 180.0);
-        double distance = Math.sin(rad_latitude_1) * Math.sin(rad_latitude_2) +
-                Math.cos(rad_latitude_1) * Math.cos(rad_latitude_2) * Math.cos(rad_longitude_diff);
-        distance = (Math.acos(distance) * 180.0 / Math.PI);
-        distance *= 60 * 1.1515 * 1.609344;
-        return distance;
+        // creating prompt instance to display prompts to user
+        prompt = new Prompt(this);
     }
 
     public void showAttendanceHistory(View view) {
-        startActivity(new Intent(this, AttendanceHistoryActivity.class)
-                .putExtra("classId", classRoom.getClassId()));
+        //TODO
     }
 
     public void sendApplication(View view) {
@@ -123,57 +76,160 @@ public class MarkAttendanceActivity extends AppCompatActivity {
 
     public void markAttendance(View view) {
 
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 100);
-
-
+        // if user has already granted GPS permission
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-            final String classId = classRoom.getClassId();
+            // getting current location
+            final LocationManager locationManager = ((LocationManager) getSystemService(Context.LOCATION_SERVICE));
+            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-            // getting mac address
-            TelephonyManager telephonyManager;
-            telephonyManager = (TelephonyManager) getSystemService(Context.
-                    TELEPHONY_SERVICE);
-            String deviceId = telephonyManager.getDeviceId();
+            // if there is no location update right now
+            if (location == null) {
 
-            // getting coordinates of student
-            Location location = ((LocationManager) getSystemService(Context.LOCATION_SERVICE))
-                    .getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            double studentLongitude = location.getLongitude();
-            double studentLatitude = location.getLatitude();
+                // requesting location updates
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, new LocationListener() {
+                    @Override
+                    public void onLocationChanged(Location location) {
+                        Log.d(TAG, "GPS ON");
+
+                        // stop for requesting updates again and again
+                        locationManager.removeUpdates(this);
+
+                        // marking attendance of student
+                        addAttendance(location.getLongitude(), location.getLatitude());
+                    }
+
+                    @Override
+                    public void onStatusChanged(String provider, int status, Bundle extras) {
+                    }
+
+                    @Override
+                    public void onProviderEnabled(String provider) {
+                    }
+
+                    @Override
+                    public void onProviderDisabled(String provider) {
+                    }
+                });
+            }
+
+            // if location is found, creating attendance session
+            else
+                addAttendance(location.getLongitude(), location.getLatitude());
+        }
+
+        // if user has not granted GPS permission already
+        else
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+    }
+
+    private double getDistance(double latitude_1, double longitude_1, double latitude_2, double longitude_2) {
+
+        // converting teacher latitude into radian
+        double rad_latitude_1 = (latitude_1 * Math.PI / 180.0);
+
+        // converting student latitude into radian
+        double rad_latitude_2 = (latitude_2 * Math.PI / 180.0);
+
+        // converting difference of teacher and student latitude into radian
+        double rad_longitude_diff = ((longitude_1 - longitude_2) * Math.PI / 180.0);
+
+        // calculating distance between student and teacher
+        double distance = Math.sin(rad_latitude_1) * Math.sin(rad_latitude_2) +
+                Math.cos(rad_latitude_1) * Math.cos(rad_latitude_2) * Math.cos(rad_longitude_diff);
+
+        // converting distance into meters and returning
+        return (((Math.acos(distance) * 180.0 / Math.PI) * (111.18957696)) / 1000.0);
+    }
+
+    private void addAttendance(final double studentLongitude, final double studentLatitude) {
+
+        // if user has already granted GPS permission
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+
+            // getting IMEI address
+            TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+            final String imei = telephonyManager.getDeviceId();
+
+            final String classId = classRoom.getClass_Id();
 
             // getting current date
             Calendar calendar = Calendar.getInstance();
-            final String attendanceDate = (new SimpleDateFormat("dd-MMM-yyyy", Locale.US))
-                    .format(calendar.getTime());
+            final String attendanceDate = (new SimpleDateFormat("dd-MMM-yyyy", Locale.US)).format(calendar.getTime());
 
-            FirebaseDatabase.getInstance().getReference().child("attendanceSessions/" + classId)
-                    .orderByChild("attendanceDate").equalTo(attendanceDate)
-                    .addListenerForSingleValueEvent(new ValueEventListener() {
-
+            // checking session and marking attendance
+            Database.getClassByAttendanceDate(classId, attendanceDate).addListenerForSingleValueEvent(
+                    new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                            // if attendance session was started
                             if (dataSnapshot.exists()) {
 
-                                String attendanceTimeout = String.valueOf(dataSnapshot.child("attendanceTimeout").getValue());
+                                // fetching attendance session timeout
+                                String attendanceTimeout = (String) dataSnapshot.child(Database.TIMEOUT).getValue();
 
-                                try {
-                                    if (Calendar.getInstance().getTime().after(
-                                            new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss", Locale.US).parse(attendanceTimeout))) {
+                                // fetching teacher location
+                                double teacherLatitude = (double) dataSnapshot.child(Database.LATITUDE).getValue();
+                                double teacherLongitude = (double) dataSnapshot.child(Database.LONGITUDE).getValue();
 
+                                // if student is within attendance marking range
+                                if (getDistance(teacherLatitude, teacherLongitude, studentLatitude, studentLongitude)
+                                        <= SASConstants.ATTENDANCE_MARKING_RANGE_METERS) {
+                                    try {
+
+                                        // if student is marking attendance before timeout
+                                        if (Calendar.getInstance().getTime().before(new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss", Locale.US).parse(attendanceTimeout))) {
+
+
+                                            // checking if attendance have been marked already using this IMEI
+                                            Database.getAttendanceByIMEI(classId, attendanceDate, imei).addListenerForSingleValueEvent(
+                                                    new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                                            // if attendance is not already marked using device
+                                                            if (!dataSnapshot.exists()) {
+
+                                                                // adding attendance record
+                                                                Database.addAttendance(classId, attendanceDate, classRoom.getAttendance_Id(), imei);
+
+                                                                // showing prompt to student about attendance marked
+                                                                prompt.showSuccessMessagePrompt("Your attendance has been marked for today.");
+                                                                SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                                                                    @Override
+                                                                    public void run() {
+                                                                        prompt.hidePrompt();
+                                                                    }
+                                                                });
+                                                                Log.d(TAG, "(markAttendance) Class attendance: " + classId);
+                                                            }
+
+                                                            // if attendance is already marked with using device
+                                                            else {
+
+                                                                // showing prompt to student about attendance already marked
+                                                                prompt.showFailureMessagePrompt("Attendance has already been marked using this mobile.\nNo more attendance can be marked using this mobile today.");
+                                                                SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
+                                                                    @Override
+                                                                    public void run() {
+                                                                        prompt.hidePrompt();
+                                                                    }
+                                                                });
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                        }
+                                                    }
+                                            );
+                                        }
+                                    } catch (ParseException ignored) {
                                     }
-
-                                } catch (ParseException e) {
-                                    e.printStackTrace();
                                 }
-
-
-                                Log.d(TAG, "(markAttendance) Found classId: " + classId);
                             }
                         }
 
@@ -182,26 +238,47 @@ public class MarkAttendanceActivity extends AppCompatActivity {
                         }
                     });
         }
+
+        // if user has not granted GPS permission already
+        else
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE}, 2);
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] strings,
-                                           @NonNull int[] result) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
 
-        if (requestCode == 100) {
-            if (result.length > 0 || result[0] != PackageManager.PERMISSION_GRANTED) {
+        // if request code is of GPS permission
+        if (requestCode == 1) {
 
-                prompt.showFailureMessagePrompt("Location permission is required for " +
-                        "class session starting.");
+            // if permission is not given
+            if (results.length > 0 || results[0] != PackageManager.PERMISSION_GRANTED) {
 
-                new Handler().postDelayed(new Runnable() {
+                // show prompt to teacher about GPS required for attendance marking
+                prompt.showFailureMessagePrompt("Location permission is required for marking attendance");
+                SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
                     @Override
                     public void run() {
                         prompt.hidePrompt();
                     }
-                }, 3000);
+                });
             }
+        }
 
+        // if request code is of phone state read permission
+        else if (requestCode == 2) {
+
+            // if permission is not given
+            if (results.length > 0 || results[1] != PackageManager.PERMISSION_GRANTED) {
+
+                // show prompt to student about IMEI required for attendance marking
+                prompt.showFailureMessagePrompt("Phone state permission is required for marking attendance");
+                SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
+                    @Override
+                    public void run() {
+                        prompt.hidePrompt();
+                    }
+                });
+            }
         }
     }
 
@@ -209,6 +286,13 @@ public class MarkAttendanceActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return super.onSupportNavigateUp();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Objects.requireNonNull(prompt).hidePrompt();
+        prompt = null;
     }
 
 }

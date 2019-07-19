@@ -22,7 +22,7 @@ import com.ilumastech.smart_attendance_system.MainActivity;
 import com.ilumastech.smart_attendance_system.Prompt;
 import com.ilumastech.smart_attendance_system.R;
 import com.ilumastech.smart_attendance_system.SASConstants;
-import com.ilumastech.smart_attendance_system.Tools;
+import com.ilumastech.smart_attendance_system.SASTools;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -51,6 +51,7 @@ public class MobileVerificationActivity extends AppCompatActivity {
     private void init() {
         code_tf = findViewById(R.id.code_tf);
 
+        // creating prompt instance to display prompts to user
         prompt = new Prompt(this);
 
         // getting phone number from intent
@@ -81,7 +82,7 @@ public class MobileVerificationActivity extends AppCompatActivity {
                     prompt.showFailureMessagePrompt("Login not successful\n" + e.getMessage());
 
                 // show long wait prompt
-                Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
+                SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
                     @Override
                     public void run() {
                         prompt.hidePrompt();
@@ -102,11 +103,11 @@ public class MobileVerificationActivity extends AppCompatActivity {
         Log.d(TAG, "loginAccount:" + number);
 
         // send verification code
-        PhoneAuthProvider.getInstance().verifyPhoneNumber(number, SASConstants.MOBILE_VERIFICATION_TIMEOUT, TimeUnit.SECONDS, this, verificationCallbacks);        // OnVerificationStateChangedCallbacks
+        PhoneAuthProvider.getInstance().verifyPhoneNumber(number, SASConstants.MOBILE_VERIFICATION_TIMEOUT, TimeUnit.SECONDS, this, verificationCallbacks);
 
         // show short wait prompt user about code has been sent
         prompt.showSuccessMessagePrompt("Code has been sent through SMS");
-        Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+        SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
             @Override
             public void run() {
                 prompt.hidePrompt();
@@ -137,7 +138,7 @@ public class MobileVerificationActivity extends AppCompatActivity {
 
         // show short wait prompt to user about code has been sent again
         prompt.showSuccessMessagePrompt("Code has been sent again through SMS");
-        Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+        SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
             @Override
             public void run() {
                 prompt.hidePrompt();
@@ -161,7 +162,7 @@ public class MobileVerificationActivity extends AppCompatActivity {
 
                                 // show short wait prompt to user about number verification
                                 prompt.showSuccessMessagePrompt("Number verified and linked!");
-                                Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                                SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
                                     @Override
                                     public void run() {
                                         prompt.hidePrompt();
@@ -171,7 +172,7 @@ public class MobileVerificationActivity extends AppCompatActivity {
 
                                         // show long wait prompt to user for login in
                                         prompt.showProgress("Sign In", "Login in...");
-                                        Tools.wait(3, new Runnable() {
+                                        SASTools.wait(3, new Runnable() {
                                             @Override
                                             public void run() {
                                                 prompt.hideProgress();
@@ -205,7 +206,7 @@ public class MobileVerificationActivity extends AppCompatActivity {
                                     prompt.showFailureMessagePrompt("Verification not successful\n" + Objects.requireNonNull(task.getException()).getMessage());
 
                                 // show long wait prompt
-                                Tools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
+                                SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
                                     @Override
                                     public void run() {
                                         prompt.hidePrompt();
