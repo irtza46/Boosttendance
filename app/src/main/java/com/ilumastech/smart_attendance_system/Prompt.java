@@ -124,4 +124,5 @@ public class Prompt {
     public void setOkButtonListener(View.OnClickListener clickListener) {
         prompt_ok_btn.setOnClickListener(clickListener);
     }
+
 }
