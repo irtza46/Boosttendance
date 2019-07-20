@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/background"
     tools:ignore="HardcodedText"
-    tools:context=".AboutActivity">
+    tools:context=".general_activities.AboutActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -132,7 +132,7 @@
                                 android:layout_gravity="center"
                                 android:gravity="center"
                                 android:paddingTop="20dp"
-                                android:text="She's"
+                                android:text="She's an amazing person.\nShe guided us and provided her opinions."
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
 
@@ -212,7 +212,7 @@
                                 android:layout_gravity="center"
                                 android:gravity="center"
                                 android:paddingTop="20dp"
-                                android:text="BS(Hons) Software Engineering"
+                                android:text="BS(Hons) Software Engineer"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
 
@@ -292,7 +292,7 @@
                                 android:layout_gravity="center"
                                 android:gravity="center"
                                 android:paddingTop="20dp"
-                                android:text="BS(Hons) Software Engineering"
+                                android:text="BS(Hons) Software Engineer"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
 
@@ -372,7 +372,7 @@
                                 android:layout_gravity="center"
                                 android:gravity="center"
                                 android:paddingTop="20dp"
-                                android:text="BS(Hons) Software Engineering"
+                                android:text="BS(Hons) Software Engineer"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
 

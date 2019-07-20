@@ -1,4 +1,4 @@
-package com.ilumastech.smart_attendance_system;
+package com.ilumastech.smart_attendance_system.prompts;
 
 import android.app.Activity;
 import android.graphics.Color;
@@ -10,6 +10,8 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import androidx.appcompat.app.AlertDialog;
+
+import com.ilumastech.smart_attendance_system.R;
 
 import java.util.Objects;
 

@@ -1,4 +1,4 @@
-package com.ilumastech.smart_attendance_system;
+package com.ilumastech.smart_attendance_system.firebase_database;
 
 import android.util.Log;
 
@@ -9,14 +9,17 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.ilumastech.smart_attendance_system.list_classes.ClassRoom;
+import com.ilumastech.smart_attendance_system.list_classes.Notification;
+import com.ilumastech.smart_attendance_system.main_activities.adapter.ClassListAdapter;
+import com.ilumastech.smart_attendance_system.notification_activities.adapter.NotificationListAdapter;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class Database {
+public class FirebaseDatabase {
 
     public static final String USERS = "USERS";
     public static final String U_ID = "U_ID";
@@ -33,35 +36,40 @@ public class Database {
     public static final String ATTENDANCE_DATE = "ATTENDANCE_DATE";
     public static final String TIMEOUT = "TIMEOUT";
     public static final String LONGITUDE = "LONGITUDE";
+    public static final String ENROLLED = "ENROLLED";
     public static final String LATITUDE = "LATITUDE";
     public static final String ATTENDANCES = "ATTENDANCES";
-    public static final String IMEI = "IMEI";
     public static final String NOTIFICATIONS = "NOTIFICATIONS";
     public static final String MSG = "MSG";
     public static final String DATE_TIME = "DATE_TIME";
+    private static final String TAG = "FirebaseDatabase";
 
-    private static final String TAG = "Database";
-
+    // Finalized
     public static FirebaseAuth getFirebaseAuthInstance() {
         return FirebaseAuth.getInstance();
     }
 
+    // Finalized
     public static FirebaseUser getUser() {
         return getFirebaseAuthInstance().getCurrentUser();
     }
 
+    // Finalized
     public static DatabaseReference getDatabaseReference() {
-        return FirebaseDatabase.getInstance().getReference();
+        return com.google.firebase.database.FirebaseDatabase.getInstance().getReference();
     }
 
+    // Finalized
     public static DatabaseReference getDatabaseReference(String location) {
-        return FirebaseDatabase.getInstance().getReference(location);
+        return com.google.firebase.database.FirebaseDatabase.getInstance().getReference(location);
     }
 
+    // Finalized
     public static Query getUserByMobileNumber(String number) {
         return getDatabaseReference(USERS).orderByChild(PHONE_NUMBER).equalTo(number);
     }
 
+    // Finalized
     public static void createUser(String uid, String fullName, String email, String phoneNumber) {
 
         // creating a new user object to store in database
@@ -69,28 +77,26 @@ public class Database {
         newUser.put(FULL_NAME, fullName);
         newUser.put(EMAIL, email);
         newUser.put(PHONE_NUMBER, phoneNumber);
-
         getDatabaseReference(USERS).child(uid).setValue(newUser);
     }
 
-
+    // Finalized
     public static void updateUserPhoneNumber(String number) {
-        getDatabaseReference(Database.USERS).child(getUser().getUid()).child(PHONE_NUMBER).setValue(number);
+        getDatabaseReference(FirebaseDatabase.USERS).child(getUser().getUid()).child(PHONE_NUMBER).setValue(number);
     }
 
+    // Finalized
     public static Query getClassByU_ID(String teacherId) {
         return getDatabaseReference(CLASSES).orderByChild(U_ID).equalTo(teacherId);
     }
 
-    public static void getJoinedClasses(final ClassArrayAdapter joinedClassArrayAdapter) {
+    // Finalized
+    public static void getJoinedClasses(final ClassListAdapter joinedClassListAdapter) {
 
         // checking in users
         getDatabaseReference(USERS).child(getUser().getUid()).child(JOINED).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                // clearing joined class list
-                joinedClassArrayAdapter.clear();
 
                 // if there exist any joined class
                 if (dataSnapshot.exists()) {
@@ -124,11 +130,11 @@ public class Database {
                                         String email = (String) dataSnapshot.child(EMAIL).getValue();
 
                                         // adding class to joined class adapter
-                                        joinedClassArrayAdapter.add(new ClassRoom(class_Id, class_name, u_Id, attendance_Id, email));
+                                        joinedClassListAdapter.add(new ClassRoom(class_Id, class_name, u_Id, attendance_Id, email));
                                         Log.d(TAG, "(Joined) ClassId: " + class_Id);
 
                                         // notifying joined class adapter about any changes
-                                        joinedClassArrayAdapter.notifyDataSetChanged();
+                                        joinedClassListAdapter.notifyDataSetChanged();
                                     }
 
                                     @Override
@@ -151,22 +157,27 @@ public class Database {
         });
     }
 
+    // Finalized
     public static DatabaseReference getUserByU_ID(String u_id) {
         return getDatabaseReference(USERS).child(u_id);
     }
 
+    // Finalized
     public static DatabaseReference getClassByClassId(String classId) {
         return getDatabaseReference(CLASSES).child(classId);
     }
 
+    // Finalized
     public static String getUniqueID() {
         return getDatabaseReference().push().getKey();
     }
 
+    // Finalized
     public static void updateCreatedClassesByU_ID(String teacherId, String classId) {
         getDatabaseReference(USERS).child(teacherId).child(CREATED).child(classId).setValue("");
     }
 
+    // Finalized
     public static void addNewClass(String classId, String className, String teacherId) {
 
         // creating a new class object to store in database
@@ -179,17 +190,10 @@ public class Database {
 
         // adding class record in attendances for storing class attendances record
         getDatabaseReference(ATTENDANCES).child(classId).setValue("");
-
-        // creating a new session object to store in database
-        Map<String, Object> newSession = new HashMap<>();
-        newClass.put(ATTENDANCE_DATE, "");
-        newClass.put(TIMEOUT, "");
-        newClass.put(LONGITUDE, "");
-        newClass.put(LATITUDE, "");
-        getDatabaseReference(CLASSES).child(classId).child(SESSION).setValue(newSession);
     }
 
-    public static void getCreatedClasses(final ClassArrayAdapter createdClassArrayAdapter) {
+    // Finalized
+    public static void getCreatedClasses(final ClassListAdapter createdClassListAdapter) {
 
         // checking in users
         getDatabaseReference(USERS).child(getUser().getUid()).child(CREATED).addValueEventListener(new ValueEventListener() {
@@ -197,7 +201,7 @@ public class Database {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                 // clearing joined class list
-                createdClassArrayAdapter.clear();
+                createdClassListAdapter.clear();
 
                 // if there exist any joined class
                 if (dataSnapshot.exists()) {
@@ -223,11 +227,11 @@ public class Database {
 
                                 Log.d(TAG, class_name + attendance_Date);
                                 // adding class to joined class adapter
-                                createdClassArrayAdapter.add(new ClassRoom(class_Id, class_name, attendance_Date));
+                                createdClassListAdapter.add(new ClassRoom(class_Id, class_name, attendance_Date));
                                 Log.d(TAG, "(Created) ClassId: " + class_Id);
 
                                 // notifying joined class adapter about any changes
-                                createdClassArrayAdapter.notifyDataSetChanged();
+                                createdClassListAdapter.notifyDataSetChanged();
                             }
 
                             @Override
@@ -245,10 +249,7 @@ public class Database {
 
     }
 
-    public static Query getClassByAttendanceDate(String classId, String attendanceDate) {
-        return getDatabaseReference(CLASSES).child(classId).child(SESSION).orderByChild(ATTENDANCE_DATE).equalTo(attendanceDate);
-    }
-
+    // Finalized
     public static void addSession(String classId, String attendanceDate, String attendanceTimeout, double longitude, double latitude) {
 
         // creating new session object
@@ -265,22 +266,26 @@ public class Database {
         getDatabaseReference(ATTENDANCES).child(classId).child(attendanceDate).setValue("");
     }
 
+    // Finalized
     public static void updateSessionTimeout(String classId, String attendanceTimeout) {
         getDatabaseReference(CLASSES).child(classId).child(SESSION).child(TIMEOUT).setValue(attendanceTimeout);
     }
 
-    public static Query getAttendanceByIMEI(String classId, String attendanceDate, String imei) {
-        return getDatabaseReference(ATTENDANCES).child(classId).child(attendanceDate).orderByChild(IMEI).equalTo(imei);
+    // Finalized
+    public static Query getAttendanceByAttendanceDate(String classId, String attendanceDate) {
+        return getDatabaseReference(ATTENDANCES).child(classId).child(attendanceDate);
     }
 
+    // Finalized
     public static void addAttendance(String classId, String attendanceDate, String attendance_id, String imei) {
-        getDatabaseReference(ATTENDANCES).child(classId).child(attendanceDate).child(attendance_id).child(imei).setValue("");
+        getDatabaseReference(ATTENDANCES).child(classId).child(attendanceDate).child(attendance_id).setValue(imei);
     }
 
+    // Finalized
     public static void addJoinClass(final String classId, final String email, final String id) {
 
         // checking if user exists with email
-        Database.getDatabaseReference(Database.USERS).orderByChild(Database.EMAIL).equalTo(email.toLowerCase())
+        getDatabaseReference(USERS).orderByChild(EMAIL).equalTo(email.toLowerCase())
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -292,8 +297,11 @@ public class Database {
                                 if (String.valueOf(dataSnapshot.child(EMAIL).getValue()).equalsIgnoreCase(email))
                                     return;
 
-                                Database.getUserByU_ID(temp.getKey()).child(Database.JOINED).child(classId)
-                                        .child(Database.ATTENDANCE_ID).setValue(id);
+                                // storing in joined list of class in student
+                                getUserByU_ID(temp.getKey()).child(JOINED).child(classId).child(ATTENDANCE_ID).setValue(id);
+
+                                // storing in enrolled list of class
+                                getClassByClassId(classId).child(ENROLLED).child(id).setValue(temp.getKey());
                                 break;
                             }
                         }
@@ -303,6 +311,83 @@ public class Database {
                     public void onCancelled(@NonNull DatabaseError databaseError) {
                     }
                 });
+    }
+
+    // Finalized
+    public static Query getClassSessionByClassId(String classId) {
+        return getClassByClassId(classId).child(SESSION);
+    }
+
+    // Finalized
+    public static DatabaseReference getEnrolledStudentsByClassId(String class_id) {
+        return getDatabaseReference(CLASSES).child(class_id).child(ENROLLED);
+    }
+
+    // Finalized
+    public static void sendNotification(String uid, String msg, String dateTime, String className, String email) {
+
+        // create a new notification object
+        Map<String, String> newNotification = new HashMap<>();
+        newNotification.put(MSG, msg);
+        newNotification.put(DATE_TIME, dateTime);
+        newNotification.put(CLASS_NAME, className);
+        newNotification.put(EMAIL, email);
+
+        // storing new notification in database
+        getDatabaseReference(NOTIFICATIONS).child(uid).push().setValue(newNotification);
+    }
+
+    // Finalized
+    public static void sendApplication(String u_id, String msg, String dateTime, String className, String attendanceId) {
+
+        // create a new application object
+        Map<String, String> newApplication = new HashMap<>();
+        newApplication.put(MSG, msg);
+        newApplication.put(DATE_TIME, dateTime);
+        newApplication.put(CLASS_NAME, className);
+        newApplication.put(ATTENDANCE_ID, attendanceId);
+
+        // storing new notification in database
+        getDatabaseReference(NOTIFICATIONS).child(getUser().getUid()).push().setValue(newApplication);
+    }
+
+    public static void getNotifications(final NotificationListAdapter notificationListAdapter) {
+
+        // fetching all notifications of this user
+        getDatabaseReference(NOTIFICATIONS).child(getUser().getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                // fetching each notification
+                for (DataSnapshot notification : dataSnapshot.getChildren()) {
+
+                    // getting notification details
+                    String className = String.valueOf(notification.child(CLASS_NAME).getValue());
+                    String dateTime = String.valueOf(notification.child(DATE_TIME).getValue());
+                    String msg = String.valueOf(notification.child(MSG).getValue());
+
+                    // if notification is from student
+                    String id;
+                    if (notification.hasChild(ATTENDANCE_ID))
+                        id = String.valueOf(notification.child(ATTENDANCE_ID).getValue());
+
+                    // if notification is from teacher
+                    else
+                        id = String.valueOf(notification.child(EMAIL).getValue());
+
+                    // adding notification to notification list adapter
+                    notificationListAdapter.add(new Notification(msg, dateTime, className, id));
+
+                    // notifying notification list adapter about any changes
+                    notificationListAdapter.notifyDataSetChanged();
+                    Log.d(TAG, "Notification read: " + id);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
     }
 
 //    static void getUserAndSaveRecord(final String uid,

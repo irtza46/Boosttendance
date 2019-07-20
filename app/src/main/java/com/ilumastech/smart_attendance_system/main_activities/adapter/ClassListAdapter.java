@@ -1,4 +1,4 @@
-package com.ilumastech.smart_attendance_system;
+package com.ilumastech.smart_attendance_system.main_activities.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,15 +9,18 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.ilumastech.smart_attendance_system.R;
+import com.ilumastech.smart_attendance_system.list_classes.ClassRoom;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class ClassArrayAdapter extends ArrayAdapter<ClassRoom> {
+public class ClassListAdapter extends ArrayAdapter<ClassRoom> {
 
     private List<ClassRoom> classRoomList = new ArrayList<>();
 
-    ClassArrayAdapter(Context context, int i) {
+    public ClassListAdapter(Context context, int i) {
         super(context, i);
     }
 
@@ -65,15 +68,26 @@ public class ClassArrayAdapter extends ArrayAdapter<ClassRoom> {
 
         // getting class room
         ClassRoom classRoom = getItem(position);
-        viewHolder.class_name.setText(Objects.requireNonNull(classRoom).getClass_Name());
 
-        // if attendance date is empty
-        if (classRoom.getAttendace_Date() == null)
-            viewHolder.attendance_id.setText(Objects.requireNonNull(classRoom).getAttendance_Id());
+        if (classRoom != null) {
+            viewHolder.class_name.setText(classRoom.getClass_Name());
 
-        // if attendance date is not empty
-        else
-            viewHolder.attendance_id.setText(Objects.requireNonNull(classRoom).getAttendace_Date());
+            // if attendance date is empty
+            if (classRoom.getAttendance_Date() == null)
+                viewHolder.attendance_id.setText(Objects.requireNonNull(classRoom).getAttendance_Id());
+
+                // if attendance date is not empty
+            else {
+
+                // if there is no attendance date yet
+                if (classRoom.getAttendance_Date().isEmpty())
+                    viewHolder.attendance_id.setText("No attendance taken yet.");
+
+                    // if there is attendance date yet
+                else
+                    viewHolder.attendance_id.setText(Objects.requireNonNull(classRoom).getAttendance_Date());
+            }
+        }
         return view;
     }
 

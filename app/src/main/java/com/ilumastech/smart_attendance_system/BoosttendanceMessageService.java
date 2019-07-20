@@ -19,6 +19,7 @@ import androidx.work.WorkerParameters;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.ilumastech.smart_attendance_system.main_activities.MainActivity;
 
 public class BoosttendanceMessageService extends FirebaseMessagingService {
 

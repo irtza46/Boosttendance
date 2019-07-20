@@ -12,13 +12,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
-import com.ilumastech.smart_attendance_system.Database;
-import com.ilumastech.smart_attendance_system.MainActivity;
-import com.ilumastech.smart_attendance_system.Prompt;
 import com.ilumastech.smart_attendance_system.R;
-import com.ilumastech.smart_attendance_system.SASConstants;
-import com.ilumastech.smart_attendance_system.SASTools;
+import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase;
 import com.ilumastech.smart_attendance_system.login_registration_activities.registration_activities.RegisterActivity;
+import com.ilumastech.smart_attendance_system.main_activities.MainActivity;
+import com.ilumastech.smart_attendance_system.prompts.Prompt;
+import com.ilumastech.smart_attendance_system.sas_utilities.SASConstants;
+import com.ilumastech.smart_attendance_system.sas_utilities.SASTools;
 
 import java.util.Objects;
 
@@ -63,7 +63,7 @@ public class EmailLoginActivity extends AppCompatActivity {
         prompt.showProgress("Sign In", "Login in...");
 
         // authenticating email and password
-        Database.getFirebaseAuthInstance().signInWithEmailAndPassword(email, password)
+        FirebaseDatabase.getFirebaseAuthInstance().signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {

@@ -9,9 +9,9 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.ilumastech.smart_attendance_system.R;
-import com.ilumastech.smart_attendance_system.SASConstants;
-import com.ilumastech.smart_attendance_system.SASTools;
 import com.ilumastech.smart_attendance_system.login_registration_activities.LoginActivity;
+import com.ilumastech.smart_attendance_system.sas_utilities.SASConstants;
+import com.ilumastech.smart_attendance_system.sas_utilities.SASTools;
 
 public class SplashScreen extends AppCompatActivity {
 

@@ -6,12 +6,12 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.ilumastech.smart_attendance_system.Database;
-import com.ilumastech.smart_attendance_system.MainActivity;
 import com.ilumastech.smart_attendance_system.R;
+import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase;
 import com.ilumastech.smart_attendance_system.login_registration_activities.login_activities.EmailLoginActivity;
 import com.ilumastech.smart_attendance_system.login_registration_activities.login_activities.MobileLoginActivity;
 import com.ilumastech.smart_attendance_system.login_registration_activities.registration_activities.RegisterActivity;
+import com.ilumastech.smart_attendance_system.main_activities.MainActivity;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -37,7 +37,7 @@ public class LoginActivity extends AppCompatActivity {
     public void checkUser() {
 
         // if user has already logged in
-        if (Database.getUser() != null) {
+        if (FirebaseDatabase.getUser() != null) {
 
 //            if (CheckUser.checkIfUserExistThroughNumber(number))
 //                startActivity(new Intent(this, MobileVerificationActivity.class)

@@ -1,4 +1,4 @@
-package com.ilumastech.smart_attendance_system;
+package com.ilumastech.smart_attendance_system.sas_utilities;
 
 public class SASConstants {
 

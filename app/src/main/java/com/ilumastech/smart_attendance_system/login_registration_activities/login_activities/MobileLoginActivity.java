@@ -22,13 +22,13 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.hbb20.CountryCodePicker;
-import com.ilumastech.smart_attendance_system.Database;
-import com.ilumastech.smart_attendance_system.MainActivity;
-import com.ilumastech.smart_attendance_system.Prompt;
 import com.ilumastech.smart_attendance_system.R;
-import com.ilumastech.smart_attendance_system.SASConstants;
-import com.ilumastech.smart_attendance_system.SASTools;
+import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase;
 import com.ilumastech.smart_attendance_system.login_registration_activities.registration_activities.RegisterActivity;
+import com.ilumastech.smart_attendance_system.main_activities.MainActivity;
+import com.ilumastech.smart_attendance_system.prompts.Prompt;
+import com.ilumastech.smart_attendance_system.sas_utilities.SASConstants;
+import com.ilumastech.smart_attendance_system.sas_utilities.SASTools;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -148,7 +148,7 @@ public class MobileLoginActivity extends AppCompatActivity {
             prompt.showProgress("Authenticating", "Please wait...");
 
             // check if user don't exist with this number
-            Database.getUserByMobileNumber(number).addListenerForSingleValueEvent(new ValueEventListener() {
+            FirebaseDatabase.getUserByMobileNumber(number).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     prompt.hideProgress();
@@ -250,7 +250,7 @@ public class MobileLoginActivity extends AppCompatActivity {
         prompt.showProgress("Sign In", "Login in...");
 
         // authenticating phone number credential
-        Database.getFirebaseAuthInstance().signInWithCredential(credential)
+        FirebaseDatabase.getFirebaseAuthInstance().signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {

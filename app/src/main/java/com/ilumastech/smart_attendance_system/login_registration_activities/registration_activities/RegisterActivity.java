@@ -18,11 +18,11 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.hbb20.CountryCodePicker;
-import com.ilumastech.smart_attendance_system.Database;
-import com.ilumastech.smart_attendance_system.Prompt;
 import com.ilumastech.smart_attendance_system.R;
-import com.ilumastech.smart_attendance_system.SASConstants;
-import com.ilumastech.smart_attendance_system.SASTools;
+import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase;
+import com.ilumastech.smart_attendance_system.prompts.Prompt;
+import com.ilumastech.smart_attendance_system.sas_utilities.SASConstants;
+import com.ilumastech.smart_attendance_system.sas_utilities.SASTools;
 
 import java.util.Objects;
 
@@ -69,7 +69,7 @@ public class RegisterActivity extends AppCompatActivity {
             return;
 
         // check if user don't exist with this number
-        Database.getUserByMobileNumber(number).addValueEventListener(new ValueEventListener() {
+        FirebaseDatabase.getUserByMobileNumber(number).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -111,7 +111,7 @@ public class RegisterActivity extends AppCompatActivity {
         prompt.showProgress("Sign Up", "Registering...");
 
         // creating account using email and password
-        Database.getFirebaseAuthInstance().createUserWithEmailAndPassword(email, password)
+        FirebaseDatabase.getFirebaseAuthInstance().createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -122,7 +122,7 @@ public class RegisterActivity extends AppCompatActivity {
                             Log.d(TAG, "createUserWithEmail:success");
 
                             // getting user account
-                            FirebaseUser firebaseUser = Database.getUser();
+                            FirebaseUser firebaseUser = FirebaseDatabase.getUser();
 
                             // setting user account display name
                             firebaseUser.updateProfile(new UserProfileChangeRequest.Builder().setDisplayName(fullName).build());
@@ -131,7 +131,7 @@ public class RegisterActivity extends AppCompatActivity {
                             firebaseUser.sendEmailVerification();
 
                             // registering user in database without number
-                            Database.createUser(firebaseUser.getUid(), fullName, email, "");
+                            FirebaseDatabase.createUser(firebaseUser.getUid(), fullName, email, "");
 
                             // show short wait prompt to user about account creation
                             prompt.showSuccessMessagePrompt("Account created.");

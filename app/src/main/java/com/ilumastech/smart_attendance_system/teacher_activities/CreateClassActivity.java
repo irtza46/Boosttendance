@@ -1,4 +1,4 @@
-package com.ilumastech.smart_attendance_system;
+package com.ilumastech.smart_attendance_system.teacher_activities;
 
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -19,6 +19,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
+import com.ilumastech.smart_attendance_system.R;
+import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase;
+import com.ilumastech.smart_attendance_system.prompts.Prompt;
+import com.ilumastech.smart_attendance_system.sas_utilities.SASConstants;
+import com.ilumastech.smart_attendance_system.sas_utilities.SASTools;
 import com.opencsv.CSVReader;
 
 import java.io.File;
@@ -144,7 +149,7 @@ public class CreateClassActivity extends AppCompatActivity {
             final String teacherId = FirebaseAuth.getInstance().getUid();
 
             // check if class with same name already exists
-            Database.getClassByU_ID(teacherId)
+            FirebaseDatabase.getClassByU_ID(teacherId)
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -160,7 +165,7 @@ public class CreateClassActivity extends AppCompatActivity {
                                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
                                     // if class with this name has been created before
-                                    String alreadyClassName = (String) snapshot.child(Database.CLASS_NAME).getValue();
+                                    String alreadyClassName = (String) snapshot.child(FirebaseDatabase.CLASS_NAME).getValue();
                                     if (Objects.requireNonNull(alreadyClassName).equalsIgnoreCase(className)) {
 
                                         // showing prompt to teacher about class with same name already exists
@@ -202,18 +207,18 @@ public class CreateClassActivity extends AppCompatActivity {
 
     private void addClass(String className, String teacherId) {
 
-        final String classId = Database.getUniqueID();
+        final String classId = FirebaseDatabase.getUniqueID();
         Log.d(TAG, "Creating class classId: " + classId);
 
         // creating new class in database
-        Database.addNewClass(classId, className, teacherId);
+        FirebaseDatabase.addNewClass(classId, className, teacherId);
 
         // updating created classes of user in database
-        Database.updateCreatedClassesByU_ID(teacherId, classId);
+        FirebaseDatabase.updateCreatedClassesByU_ID(teacherId, classId);
 
         // adding students in class
         for (int i = 0; i < studentsEmails.size(); i++)
-            Database.addJoinClass(classId, studentsEmails.get(i), studentsIds.get(i));
+            FirebaseDatabase.addJoinClass(classId, studentsEmails.get(i), studentsIds.get(i));
 
         // show short wait prompt to user that class has been created
         prompt.showSuccessMessagePrompt("Class has been created.");

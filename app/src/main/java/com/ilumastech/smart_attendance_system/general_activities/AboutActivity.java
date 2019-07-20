@@ -1,9 +1,11 @@
-package com.ilumastech.smart_attendance_system;
+package com.ilumastech.smart_attendance_system.general_activities;
 
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
+import com.ilumastech.smart_attendance_system.R;
 
 public class AboutActivity extends AppCompatActivity {
 

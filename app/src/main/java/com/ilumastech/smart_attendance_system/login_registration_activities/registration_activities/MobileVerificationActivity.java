@@ -17,12 +17,12 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
-import com.ilumastech.smart_attendance_system.Database;
-import com.ilumastech.smart_attendance_system.MainActivity;
-import com.ilumastech.smart_attendance_system.Prompt;
 import com.ilumastech.smart_attendance_system.R;
-import com.ilumastech.smart_attendance_system.SASConstants;
-import com.ilumastech.smart_attendance_system.SASTools;
+import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase;
+import com.ilumastech.smart_attendance_system.main_activities.MainActivity;
+import com.ilumastech.smart_attendance_system.prompts.Prompt;
+import com.ilumastech.smart_attendance_system.sas_utilities.SASConstants;
+import com.ilumastech.smart_attendance_system.sas_utilities.SASTools;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -149,7 +149,7 @@ public class MobileVerificationActivity extends AppCompatActivity {
     private void signInWithPhoneAuth(PhoneAuthCredential credential) {
 
         // linking phone number credential with user account
-        FirebaseUser firebaseUser = Database.getUser();
+        FirebaseUser firebaseUser = FirebaseDatabase.getUser();
         if (firebaseUser != null) {
             firebaseUser.updatePhoneNumber(credential)
                     .addOnCompleteListener(this, new OnCompleteListener<Void>() {
@@ -168,7 +168,7 @@ public class MobileVerificationActivity extends AppCompatActivity {
                                         prompt.hidePrompt();
 
                                         // updating phone number in data for this user
-                                        Database.updateUserPhoneNumber(number);
+                                        FirebaseDatabase.updateUserPhoneNumber(number);
 
                                         // show long wait prompt to user for login in
                                         prompt.showProgress("Sign In", "Login in...");
