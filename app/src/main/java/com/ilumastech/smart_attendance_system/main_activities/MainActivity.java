@@ -20,12 +20,12 @@ import com.google.android.material.navigation.NavigationView;
 import com.ilumastech.smart_attendance_system.R;
 import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase;
 import com.ilumastech.smart_attendance_system.general_activities.AboutActivity;
-import com.ilumastech.smart_attendance_system.general_activities.ProfileActivity;
 import com.ilumastech.smart_attendance_system.list_classes.ClassRoom;
 import com.ilumastech.smart_attendance_system.login_registration_activities.LoginActivity;
 import com.ilumastech.smart_attendance_system.main_activities.adapter.ClassListAdapter;
 import com.ilumastech.smart_attendance_system.notification_activities.NotificationActivity;
 import com.ilumastech.smart_attendance_system.prompts.Prompt;
+import com.ilumastech.smart_attendance_system.sas_utilities.SASConstants;
 import com.ilumastech.smart_attendance_system.student_activities.MarkAttendanceActivity;
 import com.ilumastech.smart_attendance_system.teacher_activities.ClassDetailsActivity;
 import com.ilumastech.smart_attendance_system.teacher_activities.CreateClassActivity;
@@ -63,13 +63,12 @@ public class MainActivity extends AppCompatActivity {
         drawerLayout.addDrawerListener(drawerToggle);
         drawerToggle.syncState();
 
-        NavigationView navigationView = findViewById(R.id.nav_view);
         // creating navigation menu item select listener
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                navigationMenu(menuItem.getItemId());
-                return true;
+                return navigationMenu(menuItem.getItemId());
             }
         });
 
@@ -103,19 +102,7 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-
-                // if joined classes list is selected
-                if (menuItem.getItemId() == R.id.joined_classes) {
-                    listView.setAdapter(joinedClassListAdapter);
-                    return true;
-                }
-
-                // if created classes list is selected
-                if (menuItem.getItemId() == R.id.created_classes) {
-                    listView.setAdapter(createdClassListAdapter);
-                    return true;
-                }
-                return false;
+                return bottomNavigationMenu(menuItem.getItemId());
             }
         });
 
@@ -143,15 +130,13 @@ public class MainActivity extends AppCompatActivity {
                     .putExtra("classRoom", classRoom));
     }
 
-    private void navigationMenu(int itemId) {
-
-        // if user choose to view profile
-        if (itemId == R.id.profile)
-            startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+    private boolean navigationMenu(int itemId) {
 
         // if user choose to view notifications
-        if (itemId == R.id.notifications)
+        if (itemId == R.id.notifications) {
             startActivity(new Intent(MainActivity.this, NotificationActivity.class));
+            return true;
+        }
 
         // if user choose to logout
         else if (itemId == R.id.logout) {
@@ -173,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
                     MainActivity.this.finish();
                 }
             });
+            return true;
         }
 
         // if user choose to share our application
@@ -181,14 +167,34 @@ public class MainActivity extends AppCompatActivity {
             // calling the sharing intent
             Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
             sharingIntent.setType("text/plain");
-            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Boosttendance (Smart Attendance System)");
-            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, "Install it from here: ");
-            startActivity(Intent.createChooser(sharingIntent, "Share Via"));
+            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Smart Attendance System (Boosttendance)");
+            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, "Download and install: " + SASConstants.APPLICATION_DOWNLOAD_LINK);
+            startActivity(Intent.createChooser(sharingIntent, "Share Download link"));
+            return true;
         }
 
         // if user chooses to view about details
-        else if (itemId == R.id.about)
+        else if (itemId == R.id.about) {
             startActivity(new Intent(MainActivity.this, AboutActivity.class));
+            return true;
+        }
+        return false;
+    }
+
+    private boolean bottomNavigationMenu(int itemId) {
+
+        // if joined classes list is selected
+        if (itemId == R.id.joined_classes) {
+            listView.setAdapter(joinedClassListAdapter);
+            return true;
+        }
+
+        // if created classes list is selected
+        if (itemId == R.id.created_classes) {
+            listView.setAdapter(createdClassListAdapter);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -204,7 +210,6 @@ public class MainActivity extends AppCompatActivity {
             // show prompt to user to choose if user wants to exit application
             prompt.showInputMessagePrompt("Quit", "Are you sure you quit?", "Yes", "No");
             prompt.setOkButtonListener(new View.OnClickListener() {
-
                 @Override
                 public void onClick(View v) {
                     prompt.hideInputPrompt();
@@ -213,7 +218,6 @@ public class MainActivity extends AppCompatActivity {
                     MainActivity.this.finish();
                 }
             });
-            super.onBackPressed();
         }
     }
 

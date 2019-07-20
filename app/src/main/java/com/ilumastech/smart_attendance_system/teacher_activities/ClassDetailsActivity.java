@@ -545,7 +545,7 @@ public class ClassDetailsActivity extends AppCompatActivity {
                                                             prompt.hideInputPrompt();
 
                                                             // updating session timeout in database
-                                                            FirebaseDatabase.updateSessionTimeout(classId, attendanceTimeout);
+                                                            FirebaseDatabase.updateSessionTimeout(classId, attendanceTimeout, longitude, latitude);
 
                                                             // show extra wait prompt about session has update and display new timeout
                                                             prompt.showSuccessMessagePrompt("Session timeout has been updated to:\n\n" + attendanceTimeout);

@@ -13,7 +13,6 @@ import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase
 import com.ilumastech.smart_attendance_system.list_classes.Notification;
 import com.ilumastech.smart_attendance_system.notification_activities.adapter.NotificationListAdapter;
 import com.ilumastech.smart_attendance_system.prompts.NotificationMessagePrompt;
-import com.ilumastech.smart_attendance_system.prompts.Prompt;
 
 public class NotificationActivity extends AppCompatActivity {
 
@@ -47,9 +46,6 @@ public class NotificationActivity extends AppCompatActivity {
 
         // displaying joined classes by default
         listView.setAdapter(notificationListAdapter);
-
-        // creating prompt instance to display prompts to user
-        Prompt prompt = new Prompt(this);
     }
 
     private void viewNotification(AdapterView<?> parent, int position) {
@@ -62,7 +58,7 @@ public class NotificationActivity extends AppCompatActivity {
         if (notification.getId().contains("@"))
             notificationMessagePrompt = new NotificationMessagePrompt(this, 0, notification.getMsg());
 
-        // if application is from student
+            // if application is from student
         else
             notificationMessagePrompt = new NotificationMessagePrompt(this, 1, notification.getMsg());
 

@@ -21,26 +21,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".notification_activities.NotificationActivity" />
-        <activity android:name=".general_activities.ProfileActivity" />
-
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/ic_logo_notification" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/colorPrimary" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="fcm_default_channel" />
-
-        <service
-            android:name=".BoosttendanceMessageService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
 
         <activity
             android:name=".startup_activities.SplashScreen"
@@ -51,6 +31,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".notification_activities.NotificationActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".general_activities.AboutActivity"
             android:screenOrientation="portrait" />
@@ -68,9 +52,6 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".login_registration_activities.registration_activities.MobileVerificationActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".startup_activities.StarterActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".main_activities.MainActivity"

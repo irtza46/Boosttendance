@@ -3,10 +3,6 @@
 
     <item android:title="Account">
         <menu>
-            <item
-                android:id="@+id/profile"
-                android:icon="@drawable/ic_person_white_24dp"
-                android:title="Profile" />
 
             <item
                 android:id="@+id/notifications"

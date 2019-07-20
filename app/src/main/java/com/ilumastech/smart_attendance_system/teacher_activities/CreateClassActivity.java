@@ -1,7 +1,6 @@
 package com.ilumastech.smart_attendance_system.teacher_activities;
 
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -138,7 +137,7 @@ public class CreateClassActivity extends AppCompatActivity {
         final String className = classname.getText().toString();
 
         // checking if entered class name is not empty
-        if (TextUtils.isEmpty(className)) {
+        if (className.isEmpty()) {
             classname.setError("Class name is required.");
             return;
         }
@@ -158,7 +157,7 @@ public class CreateClassActivity extends AppCompatActivity {
                             if (!dataSnapshot.exists())
                                 addClass(className, teacherId);
 
-                            // if this teacher has already created any class
+                                // if this teacher has already created any class
                             else {
 
                                 // checking for all classes created by current teacher uid

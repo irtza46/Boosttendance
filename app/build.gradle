@@ -41,12 +41,11 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth:18.1.0'
     implementation 'com.google.firebase:firebase-core:17.0.1'
     implementation 'com.google.firebase:firebase-database:18.0.0'
-    implementation 'com.google.firebase:firebase-messaging:19.0.1'
     implementation 'com.google.firebase:firebase-functions:18.0.0'
 
     implementation 'com.hbb20:ccp:2.2.9'
-    implementation 'de.hdodenhof:circleimageview:2.2.0'
     implementation 'com.github.clans:fab:1.6.2'
+    implementation 'de.hdodenhof:circleimageview:2.2.0'
     implementation 'com.github.angads25:filepicker:1.1.1'
     implementation 'com.opencsv:opencsv:3.9'
 }

@@ -267,8 +267,10 @@ public class FirebaseDatabase {
     }
 
     // Finalized
-    public static void updateSessionTimeout(String classId, String attendanceTimeout) {
+    public static void updateSessionTimeout(String classId, String attendanceTimeout, double longitude, double latitude) {
         getDatabaseReference(CLASSES).child(classId).child(SESSION).child(TIMEOUT).setValue(attendanceTimeout);
+        getDatabaseReference(CLASSES).child(classId).child(SESSION).child(LONGITUDE).setValue(longitude);
+        getDatabaseReference(CLASSES).child(classId).child(SESSION).child(LATITUDE).setValue(latitude);
     }
 
     // Finalized
@@ -371,7 +373,7 @@ public class FirebaseDatabase {
                     if (notification.hasChild(ATTENDANCE_ID))
                         id = String.valueOf(notification.child(ATTENDANCE_ID).getValue());
 
-                    // if notification is from teacher
+                        // if notification is from teacher
                     else
                         id = String.valueOf(notification.child(EMAIL).getValue());
 

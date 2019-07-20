@@ -76,7 +76,7 @@ public class ClassListAdapter extends ArrayAdapter<ClassRoom> {
             if (classRoom.getAttendance_Date() == null)
                 viewHolder.attendance_id.setText(Objects.requireNonNull(classRoom).getAttendance_Id());
 
-                // if attendance date is not empty
+            // if attendance date is not empty
             else {
 
                 // if there is no attendance date yet
