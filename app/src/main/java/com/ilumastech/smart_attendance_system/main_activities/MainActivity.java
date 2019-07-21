@@ -208,16 +208,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-
+    protected void onStart() {
         // clearing joined class list
-        joinedClassListAdapter.clear();
+        joinedClassListAdapter.clearList();
 
         // clearing created class list
-        createdClassListAdapter.clear();
+        createdClassListAdapter.clearList();
 
         FirebaseDatabase.getJoinedClasses(joinedClassListAdapter);
         FirebaseDatabase.getCreatedClasses(createdClassListAdapter);
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+
         super.onResume();
     }
 

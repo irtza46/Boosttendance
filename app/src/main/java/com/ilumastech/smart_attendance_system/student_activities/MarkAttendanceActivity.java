@@ -257,7 +257,7 @@ public class MarkAttendanceActivity extends AppCompatActivity {
 
                     // requesting location updates
                     Log.d(TAG, "Location requested");
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, new LocationListener() {
                         @Override
                         public void onLocationChanged(Location location) {
                             Log.d(TAG, "GPS ON");
@@ -468,7 +468,7 @@ public class MarkAttendanceActivity extends AppCompatActivity {
                                                 prompt.hideProgress();
 
                                                 // show short prompt to student about attendance session not started yet
-                                                prompt.showFailureMessagePrompt("Attendance marking session not stated.");
+                                                prompt.showFailureMessagePrompt("Attendance marking session not started.");
                                                 SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
                                                     @Override
                                                     public void run() {

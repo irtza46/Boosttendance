@@ -91,6 +91,12 @@ public class ClassListAdapter extends ArrayAdapter<ClassRoom> {
         return view;
     }
 
+    public void clearList()
+    {
+        classRoomList.clear();
+        notifyDataSetChanged();
+    }
+
     private static class ClassViewHolder {
         TextView class_name;
         TextView attendance_id;

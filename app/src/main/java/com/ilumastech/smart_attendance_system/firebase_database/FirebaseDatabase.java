@@ -98,9 +98,6 @@ public class FirebaseDatabase {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                // clearing joined class list
-                joinedClassListAdapter.clear();
-
                 // if there exist any joined class
                 if (dataSnapshot.exists()) {
 
@@ -202,9 +199,6 @@ public class FirebaseDatabase {
         getDatabaseReference(USERS).child(getUser().getUid()).child(CREATED).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                // clearing created class list
-                createdClassListAdapter.clear();
 
                 // if there exist any created class
                 if (dataSnapshot.exists()) {

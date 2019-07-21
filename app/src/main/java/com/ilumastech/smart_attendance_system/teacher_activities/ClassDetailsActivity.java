@@ -478,7 +478,7 @@ public class ClassDetailsActivity extends AppCompatActivity {
 
                     // requesting location updates
                     Log.d(TAG, "Location requested");
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, new LocationListener() {
                         @Override
                         public void onLocationChanged(Location location) {
                             Log.d(TAG, "GPS ON");
