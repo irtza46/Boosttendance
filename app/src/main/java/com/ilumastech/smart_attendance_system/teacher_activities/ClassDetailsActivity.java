@@ -41,6 +41,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -119,15 +120,30 @@ public class ClassDetailsActivity extends AppCompatActivity {
                                 if (dataSnapshot.exists()) {
 
                                     // adding this class to joined classes of student
-
                                     for (DataSnapshot temp : dataSnapshot.getChildren()) {
 
-                                        // storing in joined list of class in student
-                                        FirebaseDatabase.getUserByU_ID(temp.getKey()).child(FirebaseDatabase.JOINED).child(classRoom.getClass_Id()).child(FirebaseDatabase.ATTENDANCE_ID).setValue(id);
+                                        // if email matches with teachers email
+                                        if (email.equalsIgnoreCase(FirebaseDatabase.getUser().getEmail())) {
 
-                                        // storing in enrolled list of class
-                                        FirebaseDatabase.getClassByClassId(classRoom.getClass_Id()).child(FirebaseDatabase.ENROLLED).child(id).setValue(temp.getKey());
-                                        break;
+                                            // show short wait prompt to teacher about cannot enroll in created class
+                                            prompt.showFailureMessagePrompt("You can not enroll yourself in your created class.");
+                                            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    prompt.hidePrompt();
+                                                }
+                                            });
+                                        }
+
+                                        // if email does not matches with teachers email
+                                        else {
+                                            // storing in joined list of class in student
+                                            FirebaseDatabase.getUserByU_ID(temp.getKey()).child(FirebaseDatabase.JOINED).child(classRoom.getClass_Id()).child(FirebaseDatabase.ATTENDANCE_ID).setValue(id);
+
+                                            // storing in enrolled list of class
+                                            FirebaseDatabase.getClassByClassId(classRoom.getClass_Id()).child(FirebaseDatabase.ENROLLED).child(id).setValue(temp.getKey());
+                                            break;
+                                        }
                                     }
 
                                     // show prompt to teacher that student has been enrolled
@@ -165,10 +181,25 @@ public class ClassDetailsActivity extends AppCompatActivity {
 
     public void exportAttendanceRecord(View view) {
 
+        // checking each student attendance record for this class
+        prompt.showProgress("Attendance Record", "Exporting attendance record...");
         FirebaseDatabase.getDatabaseReference(FirebaseDatabase.CLASSES).child(classRoom.getClass_Id()).child(FirebaseDatabase.ENROLLED)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        // if there are no students enrolled in this class
+                        if (!dataSnapshot.exists()) {
+                            prompt.hideProgress();
+                            prompt.showFailureMessagePrompt("No students enrolled in this class yet.");
+                            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                                @Override
+                                public void run() {
+                                    prompt.hidePrompt();
+                                }
+                            });
+                            return;
+                        }
 
                         // getting list of all enrolled students attendance ID
                         final List<String> enrolledStudentsAttendanceID = new ArrayList<>();
@@ -185,7 +216,8 @@ public class ClassDetailsActivity extends AppCompatActivity {
                                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                                             // if there is no attendance record
-                                            if (dataSnapshot.getChildrenCount() == 0) {
+                                            if (!dataSnapshot.exists() || dataSnapshot.getChildrenCount() == 0) {
+                                                prompt.hideProgress();
                                                 prompt.showFailureMessagePrompt("There is no attendance record for this class yet.");
                                                 SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
                                                     @Override
@@ -216,6 +248,7 @@ public class ClassDetailsActivity extends AppCompatActivity {
                                                     // storing attendance ids of students
                                                     attendanceIds.put(dates.getKey(), ids);
                                                 }
+                                                prompt.hideProgress();
 
                                                 // creating attendance record file
                                                 createFile(classRoom.getClass_Name(), enrolledStudentsAttendanceID, attendanceDates, attendanceIds);
@@ -245,25 +278,58 @@ public class ClassDetailsActivity extends AppCompatActivity {
             File attendanceFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), class_name + ".csv");
             Log.d(TAG, "Storing attendance record to file: " + attendanceFile.toString());
 
+            // exporting attendance record to csv file
             CSVWriter writer = null;
             try {
                 writer = new CSVWriter(new FileWriter(attendanceFile));
                 List<String[]> data = new ArrayList<>();
 
-                // creating header
+                // creating header wtih dates
                 String[] header = new String[attendanceDates.size() + 1];
                 header[0] = "Student ID";
                 for (int i = 1; i < attendanceDates.size() + 1; i++)
                     header[i] = attendanceDates.get(i - 1);
 
+                // adding header to csv attendance file
                 data.add(header);
-                Log.e(TAG, String.valueOf(header));
 
-//            writer.writeAll(data);
+                // adding each student attendance record to csv attendance file
+                for (int i = 0; i < enrolledStudentsAttendanceID.size(); i++) {
+
+                    // creating attendance row
+                    String[] attendance = new String[attendanceDates.size() + 1];
+                    attendance[0] = enrolledStudentsAttendanceID.get(i);
+
+                    // checking each student id attendance for every date
+                    for (int j = 0; j < attendanceDates.size(); j++) {
+
+                        // if attendance id of student is found
+                        if (attendanceIds.get(attendanceDates.get(j)).contains(attendance[0]))
+                            attendance[j + 1] = "P";
+
+                        // if attendance id of student is not found
+                        else
+                            attendance[j + 1] = "A";
+                    }
+
+                    // adding every student attendance record to csv attendance file
+                    data.add(attendance);
+                    Log.e(TAG, Arrays.toString(header) + Arrays.toString(attendance));
+                }
+
+                // writing data to attendance file
+                writer.writeAll(data);
                 writer.close();
-            } catch (IOException e) {
-                Log.e(TAG, e.getMessage());
-            }
+
+                // show long wait prompt to student about file has been saved
+                prompt.showSuccessMessagePrompt("Attendance record have been saved for this class in download folder:\n\n" + attendanceFile.getName());
+                SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
+                    @Override
+                    public void run() {
+                        prompt.hideInputPrompt();
+                    }
+                });
+            } catch (IOException ignored) {}
         }
 
         // if user has not granted WRITE_EXTERNAL_STORAGE permission already
@@ -323,7 +389,7 @@ public class ClassDetailsActivity extends AppCompatActivity {
                                 // getting current date
                                 final Calendar calendar = Calendar.getInstance();
                                 calendar.setTimeInMillis(timestamp);
-                                final String dateTime = (new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss", Locale.US)).format(calendar.getTime());
+                                final String dateTime = (new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss a", Locale.US)).format(calendar.getTime());
 
                                 // getting class name
                                 final String className = classRoom.getClass_Name();
@@ -472,7 +538,6 @@ public class ClassDetailsActivity extends AppCompatActivity {
                 .call().addOnSuccessListener(new OnSuccessListener<HttpsCallableResult>() {
             @Override
             public void onSuccess(HttpsCallableResult httpsCallableResult) {
-                prompt.hideProgress();
 
                 // getting timestamp from firebase function
                 long timestamp = (long) httpsCallableResult.getData();
@@ -497,6 +562,7 @@ public class ClassDetailsActivity extends AppCompatActivity {
                         new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                prompt.hideProgress();
 
                                 // if session was not started already in today date
                                 if (!dataSnapshot.exists() || !String.valueOf(dataSnapshot.child(FirebaseDatabase.ATTENDANCE_DATE).getValue()).equals(attendanceDate)) {

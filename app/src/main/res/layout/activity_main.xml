@@ -63,17 +63,17 @@
             android:layout_marginStart="20dp"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="20dp"
+            android:descendantFocusability="blocksDescendants"
             android:divider="@drawable/flag_transparent"
             android:dividerHeight="10dp"
             android:scrollbars="none"
-            android:descendantFocusability="blocksDescendants"
             app:layout_constraintBottom_toTopOf="@id/bottom_nav_menu"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
         <com.github.clans.fab.FloatingActionMenu
-            android:id="@+id/material_design_android_floating_action_menu"
+            android:id="@+id/float_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
@@ -128,14 +128,14 @@
             android:id="@+id/bottom_nav_menu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorPrimary"
+            android:background="@color/cardview_shadow_start_color"
             android:elevation="4dp"
-            style="@style/BottomNavigation"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/list_view"
-            app:menu="@menu/bottom_nav_menu" />
+            app:menu="@menu/bottom_nav_menu"
+            tools:ignore="PrivateResource" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

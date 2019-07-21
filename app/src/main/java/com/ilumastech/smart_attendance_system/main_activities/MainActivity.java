@@ -15,6 +15,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.ilumastech.smart_attendance_system.R;
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView listView;
     private DrawerLayout drawerLayout;
     private BottomNavigationView bottomNavigationView;
+    private FloatingActionMenu floatingButton;
 
     private Prompt prompt;
 
@@ -90,8 +92,6 @@ public class MainActivity extends AppCompatActivity {
         // created joined and created classes arrays adapter
         joinedClassListAdapter = new ClassListAdapter(this, R.layout.class_card);
         createdClassListAdapter = new ClassListAdapter(this, R.layout.class_card);
-        FirebaseDatabase.getJoinedClasses(joinedClassListAdapter);
-        FirebaseDatabase.getCreatedClasses(createdClassListAdapter);
 
         // displaying joined classes by default
         listView.setAdapter(joinedClassListAdapter);
@@ -108,6 +108,10 @@ public class MainActivity extends AppCompatActivity {
 
         // creating prompt instance to display prompts to user
         prompt = new Prompt(this);
+
+        // do not show floating button when joined classes are selected
+        floatingButton = findViewById(R.id.float_button);
+        floatingButton.setVisibility(View.GONE);
     }
 
     public void createClass(View view) {
@@ -186,15 +190,35 @@ public class MainActivity extends AppCompatActivity {
         // if joined classes list is selected
         if (itemId == R.id.joined_classes) {
             listView.setAdapter(joinedClassListAdapter);
+
+            // do not show floating button when joined classes are selected
+            floatingButton.setVisibility(View.GONE);
             return true;
         }
 
         // if created classes list is selected
         if (itemId == R.id.created_classes) {
             listView.setAdapter(createdClassListAdapter);
+
+            // show floating button when joined classes are selected
+            floatingButton.setVisibility(View.VISIBLE);
             return true;
         }
         return false;
+    }
+
+    @Override
+    protected void onResume() {
+
+        // clearing joined class list
+        joinedClassListAdapter.clear();
+
+        // clearing created class list
+        createdClassListAdapter.clear();
+
+        FirebaseDatabase.getJoinedClasses(joinedClassListAdapter);
+        FirebaseDatabase.getCreatedClasses(createdClassListAdapter);
+        super.onResume();
     }
 
     @Override

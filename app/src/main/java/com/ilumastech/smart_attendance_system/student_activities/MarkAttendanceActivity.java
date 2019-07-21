@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -88,13 +89,15 @@ public class MarkAttendanceActivity extends AppCompatActivity {
     public void showAttendanceHistory(View view) {
 
         // checking this student attendance record for this class
+        prompt.showProgress("Attendance Record", "Exporting attendance record...");
         FirebaseDatabase.getDatabaseReference(FirebaseDatabase.ATTENDANCES).child(classRoom.getClass_Id())
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                         // if there is no attendance record
-                        if (dataSnapshot.getChildrenCount() == 0) {
+                        if (!dataSnapshot.exists() || dataSnapshot.getChildrenCount() == 0) {
+                            prompt.hideProgress();
                             prompt.showFailureMessagePrompt("There is no attendance record for this class yet.");
                             SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
                                 @Override
@@ -125,9 +128,10 @@ public class MarkAttendanceActivity extends AppCompatActivity {
                                 else
                                     attendances.put(dates.getKey(), "A");
                             }
+                            prompt.hideProgress();
 
                             // creating attendance record file
-                            createFile(classRoom.getClass_Name(), attendanceDates, attendances);
+                            createFile(classRoom.getClass_Name(), classRoom.getAttendance_Id(), attendanceDates, attendances);
                         }
                     }
 
@@ -137,7 +141,7 @@ public class MarkAttendanceActivity extends AppCompatActivity {
                 });
     }
 
-    private void createFile(String class_name, List<String> attendanceDates, Map<String, String> attendances) {
+    private void createFile(String class_name, String attendance_id, List<String> attendanceDates, Map<String, String> attendances) {
 
         // if user has already granted WRITE_EXTERNAL_STORAGE permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
@@ -146,27 +150,42 @@ public class MarkAttendanceActivity extends AppCompatActivity {
             File attendanceFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), class_name + ".csv");
             Log.d(TAG, "Storing attendance record to file: " + attendanceFile.toString());
 
+            // exporting attendance record to csv file
             CSVWriter writer = null;
             try {
                 writer = new CSVWriter(new FileWriter(attendanceFile));
                 List<String[]> data = new ArrayList<>();
 
-                // creating header
+                // creating attendance row
+                String[] attendance = new String[attendanceDates.size() + 1];
+                attendance[0] = attendance_id;
+
+                // creating header row
                 String[] header = new String[attendanceDates.size() + 1];
                 header[0] = "Student ID";
-                for (int i = 1; i < attendanceDates.size() + 1; i++)
+                for (int i = 1; i < attendanceDates.size() + 1; i++) {
                     header[i] = attendanceDates.get(i - 1);
+                    attendance[i] = attendances.get(header[i]);
+                }
+                Log.e(TAG, Arrays.toString(header) + Arrays.toString(attendance));
 
-
+                // adding header to csv attendance file
                 data.add(header);
-                Log.e(TAG, String.valueOf(header));
+                data.add(attendance);
 
-
-//            writer.writeAll(data);
+                // writing data to attendance file
+                writer.writeAll(data);
                 writer.close();
-            } catch (IOException e) {
-                Log.e(TAG, e.getMessage());
-            }
+
+                // show long wait prompt to student about file has been saved
+                prompt.showSuccessMessagePrompt("Attendance record have been saved for this class in download folder:\n\n" + attendanceFile.getName());
+                SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
+                    @Override
+                    public void run() {
+                        prompt.hideInputPrompt();
+                    }
+                });
+            } catch (IOException ignored) {}
         }
 
         // if user has not granted GPS permission already
@@ -205,7 +224,7 @@ public class MarkAttendanceActivity extends AppCompatActivity {
                         // getting current date
                         final Calendar calendar = Calendar.getInstance();
                         calendar.setTimeInMillis(timestamp);
-                        final String dateTime = (new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss", Locale.US)).format(calendar.getTime());
+                        final String dateTime = (new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss a", Locale.US)).format(calendar.getTime());
 
                         // getting class name
                         final String className = classRoom.getClass_Name();

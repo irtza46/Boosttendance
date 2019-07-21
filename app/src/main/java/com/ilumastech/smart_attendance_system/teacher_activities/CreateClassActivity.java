@@ -116,7 +116,7 @@ public class CreateClassActivity extends AppCompatActivity {
                 } catch (IOException e) {
 
                     // showing short prompt to user if file format is not correct or some data is missing
-                    prompt.showFailureMessagePrompt("File is not in correct format of some data is missing.");
+                    prompt.showFailureMessagePrompt("File is not in correct format, some data is missing.");
                     SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
                         @Override
                         public void run() {

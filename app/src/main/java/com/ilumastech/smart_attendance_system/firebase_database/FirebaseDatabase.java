@@ -98,6 +98,9 @@ public class FirebaseDatabase {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                // clearing joined class list
+                joinedClassListAdapter.clear();
+
                 // if there exist any joined class
                 if (dataSnapshot.exists()) {
 
@@ -200,13 +203,13 @@ public class FirebaseDatabase {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                // clearing joined class list
+                // clearing created class list
                 createdClassListAdapter.clear();
 
-                // if there exist any joined class
+                // if there exist any created class
                 if (dataSnapshot.exists()) {
 
-                    // reading data from all joined classes
+                    // reading data from all created classes
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
                         // fetching class room ID
@@ -226,11 +229,11 @@ public class FirebaseDatabase {
                                     attendance_Date = "";
 
                                 Log.d(TAG, class_name + attendance_Date);
-                                // adding class to joined class adapter
+                                // adding class to created class adapter
                                 createdClassListAdapter.add(new ClassRoom(class_Id, class_name, attendance_Date));
                                 Log.d(TAG, "(Created) ClassId: " + class_Id);
 
-                                // notifying joined class adapter about any changes
+                                // notifying created class adapter about any changes
                                 createdClassListAdapter.notifyDataSetChanged();
                             }
 
@@ -291,20 +294,19 @@ public class FirebaseDatabase {
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
                         if (dataSnapshot.exists()) {
                             for (DataSnapshot temp : dataSnapshot.getChildren()) {
 
-                                // if any email matches with teachers email
-                                if (String.valueOf(dataSnapshot.child(EMAIL).getValue()).equalsIgnoreCase(email))
-                                    return;
+                                // if email do not matches with teachers email
+                                if (!email.equalsIgnoreCase(getUser().getEmail())) {
 
-                                // storing in joined list of class in student
-                                getUserByU_ID(temp.getKey()).child(JOINED).child(classId).child(ATTENDANCE_ID).setValue(id);
+                                    // storing in joined list of class in student
+                                    getUserByU_ID(temp.getKey()).child(JOINED).child(classId).child(ATTENDANCE_ID).setValue(id);
 
-                                // storing in enrolled list of class
-                                getClassByClassId(classId).child(ENROLLED).child(id).setValue(temp.getKey());
-                                break;
+                                    // storing in enrolled list of class
+                                    getClassByClassId(classId).child(ENROLLED).child(id).setValue(temp.getKey());
+                                    break;
+                                }
                             }
                         }
                     }
