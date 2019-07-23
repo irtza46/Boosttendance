@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
             Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
             sharingIntent.setType("text/plain");
             sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Smart Attendance System (Boosttendance)");
-            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, "Download and install: " + SASConstants.APPLICATION_DOWNLOAD_LINK);
+            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, "Download and install:\n" + SASConstants.APPLICATION_DOWNLOAD_LINK);
             startActivity(Intent.createChooser(sharingIntent, "Share Download link"));
             return true;
         }

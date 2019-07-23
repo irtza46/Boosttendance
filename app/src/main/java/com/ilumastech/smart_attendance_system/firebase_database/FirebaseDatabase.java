@@ -94,7 +94,9 @@ public class FirebaseDatabase {
     public static void getJoinedClasses(final ClassListAdapter joinedClassListAdapter) {
 
         // checking in users
-        getDatabaseReference(USERS).child(getUser().getUid()).child(JOINED).addValueEventListener(new ValueEventListener() {
+        DatabaseReference joinedClassesRef = getDatabaseReference(USERS).child(getUser().getUid()).child(JOINED);
+        joinedClassesRef.keepSynced(true);
+        joinedClassesRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -196,7 +198,9 @@ public class FirebaseDatabase {
     public static void getCreatedClasses(final ClassListAdapter createdClassListAdapter) {
 
         // checking in users
-        getDatabaseReference(USERS).child(getUser().getUid()).child(CREATED).addValueEventListener(new ValueEventListener() {
+        DatabaseReference createdClassesRef = getDatabaseReference(USERS).child(getUser().getUid()).child(CREATED);
+        createdClassesRef.keepSynced(true);
+        createdClassesRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -352,7 +356,9 @@ public class FirebaseDatabase {
     public static void getNotifications(final NotificationListAdapter notificationListAdapter) {
 
         // fetching all notifications of this user
-        getDatabaseReference(NOTIFICATIONS).child(getUser().getUid()).addValueEventListener(new ValueEventListener() {
+        DatabaseReference notificationRef = getDatabaseReference(NOTIFICATIONS).child(getUser().getUid());
+        notificationRef.keepSynced(true);
+        notificationRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 

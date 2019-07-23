@@ -11,7 +11,7 @@ public class SASConstants {
     public static final int MOBILE_VERIFICATION_TIMEOUT = 60;
 
     // attendance marking range in meters
-    public static final double ATTENDANCE_MARKING_RANGE_METERS = 0.0150;
+    public static final double ATTENDANCE_MARKING_RANGE_METERS = 20;
 
-    public static final String APPLICATION_DOWNLOAD_LINK = "http://www.codeofaninja.com";
+    public static final String APPLICATION_DOWNLOAD_LINK = "https://drive.google.com/file/d/1W8oxx575AE4DY7AR6VHUr1joRtY8NTkZ/view?usp=sharing";
 }
