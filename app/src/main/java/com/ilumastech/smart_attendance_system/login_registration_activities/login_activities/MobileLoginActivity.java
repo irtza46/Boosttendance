@@ -23,7 +23,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.hbb20.CountryCodePicker;
 import com.ilumastech.smart_attendance_system.R;
-import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase;
+import com.ilumastech.smart_attendance_system.firebase_database.FirebaseController;
 import com.ilumastech.smart_attendance_system.login_registration_activities.registration_activities.RegisterActivity;
 import com.ilumastech.smart_attendance_system.main_activities.MainActivity;
 import com.ilumastech.smart_attendance_system.prompts.Prompt;
@@ -52,6 +52,19 @@ public class MobileLoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mobile_login);
         init();
+
+        // checking if internet is working or not
+        if (!SASTools.isInternetConnected(getApplicationContext())) {
+
+            // show short wait about internet not connected
+            prompt.showFailureMessagePrompt("Not connected to internet.\nPlease connect to internet.");
+            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                @Override
+                public void run() {
+                    prompt.hidePrompt();
+                }
+            });
+        }
     }
 
     private void init() {
@@ -117,6 +130,20 @@ public class MobileLoginActivity extends AppCompatActivity {
 
     public void authenticate(View view) {
 
+        // checking if internet is working or not
+        if (!SASTools.isInternetConnected(getApplicationContext())) {
+
+            // show short wait about internet not connected
+            prompt.showFailureMessagePrompt("Not connected to internet.\nPlease connect to internet.");
+            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                @Override
+                public void run() {
+                    prompt.hidePrompt();
+                }
+            });
+            return;
+        }
+
         // if code has been sent and code text view has been displayed
         if (c_resend.getVisibility() == View.VISIBLE) {
 
@@ -148,7 +175,7 @@ public class MobileLoginActivity extends AppCompatActivity {
             prompt.showProgress("Authenticating", "Please wait...");
 
             // check if user don't exist with this number
-            FirebaseDatabase.getUserByMobileNumber(number).addListenerForSingleValueEvent(new ValueEventListener() {
+            FirebaseController.getUserByMobileNumber(number).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     prompt.hideProgress();
@@ -250,7 +277,7 @@ public class MobileLoginActivity extends AppCompatActivity {
         prompt.showProgress("Sign In", "Login in...");
 
         // authenticating phone number credential
-        FirebaseDatabase.getFirebaseAuthInstance().signInWithCredential(credential)
+        FirebaseController.getAuthInstance().signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {

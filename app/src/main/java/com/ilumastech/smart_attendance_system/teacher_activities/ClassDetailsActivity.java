@@ -3,10 +3,13 @@ package com.ilumastech.smart_attendance_system.teacher_activities;
 import android.Manifest;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -27,7 +30,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.functions.FirebaseFunctions;
 import com.google.firebase.functions.HttpsCallableResult;
 import com.ilumastech.smart_attendance_system.R;
-import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase;
+import com.ilumastech.smart_attendance_system.firebase_database.FirebaseController;
 import com.ilumastech.smart_attendance_system.list_classes.ClassRoom;
 import com.ilumastech.smart_attendance_system.prompts.EnrollStudentPrompt;
 import com.ilumastech.smart_attendance_system.prompts.NotificationPrompt;
@@ -110,7 +113,7 @@ public class ClassDetailsActivity extends AppCompatActivity {
 
                 // show progress to teacher about enrolling student
                 prompt.showProgress("Enroll Student", "Enrolling...");
-                FirebaseDatabase.getDatabaseReference(FirebaseDatabase.USERS).orderByChild(FirebaseDatabase.EMAIL).equalTo(email.toLowerCase())
+                FirebaseController.getDatabaseReference(FirebaseController.USERS).orderByChild(FirebaseController.EMAIL).equalTo(email.toLowerCase())
                         .addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -123,38 +126,32 @@ public class ClassDetailsActivity extends AppCompatActivity {
                                     for (DataSnapshot temp : dataSnapshot.getChildren()) {
 
                                         // if email matches with teachers email
-                                        if (email.equalsIgnoreCase(FirebaseDatabase.getUser().getEmail())) {
-
-                                            // show short wait prompt to teacher about cannot enroll in created class
+                                        if (email.equalsIgnoreCase(FirebaseController.getUser().getEmail()))
                                             prompt.showFailureMessagePrompt("You can not enroll yourself in your created class.");
-                                            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    prompt.hidePrompt();
-                                                }
-                                            });
-                                        }
 
-                                        // if email does not matches with teachers email
+                                            // if email does not matches with teachers email
                                         else {
+
                                             // storing in joined list of class in student
-                                            FirebaseDatabase.getUserByU_ID(temp.getKey()).child(FirebaseDatabase.JOINED).child(classRoom.getClass_Id()).child(FirebaseDatabase.ATTENDANCE_ID).setValue(id);
+                                            FirebaseController.getUserByU_ID(temp.getKey()).child(FirebaseController.JOINED).child(classRoom.getClass_Id()).child(FirebaseController.ATTENDANCE_ID).setValue(id);
 
                                             // storing in enrolled list of class
-                                            FirebaseDatabase.getClassByClassId(classRoom.getClass_Id()).child(FirebaseDatabase.ENROLLED).child(id).setValue(temp.getKey());
-                                            break;
-                                        }
-                                    }
+                                            FirebaseController.getClassByClassId(classRoom.getClass_Id()).child(FirebaseController.ENROLLED).child(id).setValue(temp.getKey());
 
-                                    // show prompt to teacher that student has been enrolled
-                                    prompt.showSuccessMessagePrompt("Enrolled.");
-                                    SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            prompt.hidePrompt();
-                                            enrollStudentPrompt.hidePrompt();
+                                            // show prompt to teacher that student has been enrolled
+                                            prompt.showSuccessMessagePrompt("Enrolled.");
                                         }
-                                    });
+
+                                        // short wait before hiding enroll and response prompt
+                                        SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                prompt.hidePrompt();
+                                                enrollStudentPrompt.hidePrompt();
+                                            }
+                                        });
+                                        break;
+                                    }
                                 }
 
                                 // if student not found
@@ -183,7 +180,7 @@ public class ClassDetailsActivity extends AppCompatActivity {
 
         // checking each student attendance record for this class
         prompt.showProgress("Attendance Record", "Exporting attendance record...");
-        FirebaseDatabase.getDatabaseReference(FirebaseDatabase.CLASSES).child(classRoom.getClass_Id()).child(FirebaseDatabase.ENROLLED)
+        FirebaseController.getDatabaseReference(FirebaseController.CLASSES).child(classRoom.getClass_Id()).child(FirebaseController.ENROLLED)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -210,7 +207,7 @@ public class ClassDetailsActivity extends AppCompatActivity {
                         if (!enrolledStudentsAttendanceID.isEmpty()) {
 
                             // checking all attendance record for this class
-                            FirebaseDatabase.getDatabaseReference(FirebaseDatabase.ATTENDANCES).child(classRoom.getClass_Id())
+                            FirebaseController.getDatabaseReference(FirebaseController.ATTENDANCES).child(classRoom.getClass_Id())
                                     .addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -275,7 +272,7 @@ public class ClassDetailsActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
 
             // creating file with class name and storing in downloads folder
-            File attendanceFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), class_name + ".csv");
+            final File attendanceFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), class_name + ".csv");
             Log.d(TAG, "Storing attendance record to file: " + attendanceFile.toString());
 
             // exporting attendance record to csv file
@@ -307,7 +304,7 @@ public class ClassDetailsActivity extends AppCompatActivity {
                         if (attendanceIds.get(attendanceDates.get(j)).contains(attendance[0]))
                             attendance[j + 1] = "P";
 
-                        // if attendance id of student is not found
+                            // if attendance id of student is not found
                         else
                             attendance[j + 1] = "A";
                     }
@@ -322,14 +319,25 @@ public class ClassDetailsActivity extends AppCompatActivity {
                 writer.close();
 
                 // show long wait prompt to student about file has been saved
-                prompt.showSuccessMessagePrompt("Attendance record have been saved for this class in download folder:\n\n" + attendanceFile.getName());
+                prompt.showSuccessMessagePrompt("Attendance record have been saved for this class in\nDOWNLOADS folder:\n\n" + attendanceFile.getName());
                 SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
                     @Override
                     public void run() {
                         prompt.hideInputPrompt();
+
+                        // if android version is less than Nougat
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+
+                            // opening attendance record file after saving
+                            Intent intent = new Intent(Intent.ACTION_VIEW);
+                            intent.setDataAndType(Uri.fromFile(attendanceFile), "application/vnd.ms-excel");
+                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);
+                        }
                     }
                 });
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
 
         // if user has not granted WRITE_EXTERNAL_STORAGE permission already
@@ -355,7 +363,7 @@ public class ClassDetailsActivity extends AppCompatActivity {
                     return;
                 }
 
-                FirebaseDatabase.getEnrolledStudentsByClassId(classRoom.getClass_Id()).addListenerForSingleValueEvent(new ValueEventListener() {
+                FirebaseController.getEnrolledStudentsByClassId(classRoom.getClass_Id()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -395,12 +403,12 @@ public class ClassDetailsActivity extends AppCompatActivity {
                                 final String className = classRoom.getClass_Name();
 
                                 // getting teacher email
-                                String email = FirebaseDatabase.getUser().getEmail();
+                                String email = FirebaseController.getUser().getEmail();
 
                                 Log.d(TAG, dateTime + " : " + className + " : " + email);
                                 // sending notification to each enrolled student
                                 for (String uid : studentsUids)
-                                    FirebaseDatabase.sendNotification(uid, msg, dateTime, className, email);
+                                    FirebaseController.sendNotification(uid, msg, dateTime, className, email);
 
                                 prompt.showSuccessMessagePrompt("Notification has been sent to students.");
                                 SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
@@ -463,8 +471,7 @@ public class ClassDetailsActivity extends AppCompatActivity {
     private void getLocation(final int timeoutMins) {
 
         // if user has already granted GPS permission
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
             // getting current location
             final LocationManager locationManager = ((LocationManager) getSystemService(Context.LOCATION_SERVICE));
@@ -477,11 +484,13 @@ public class ClassDetailsActivity extends AppCompatActivity {
                 if (location == null) {
 
                     // requesting location updates
+                    prompt.showProgress("GPS", "Getting GPS coordinates. Please move to the center of class room.");
                     Log.d(TAG, "Location requested");
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, new LocationListener() {
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
                         @Override
                         public void onLocationChanged(Location location) {
                             Log.d(TAG, "GPS ON");
+                            prompt.hideProgress();
 
                             // stop for requesting updates again and again
                             locationManager.removeUpdates(this);
@@ -505,8 +514,28 @@ public class ClassDetailsActivity extends AppCompatActivity {
                 }
 
                 // if location is found, creating attendance session
-                else
+                else {
                     createSession(timeoutMins, location.getLongitude(), location.getLatitude());
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+                                @Override
+                                public void onLocationChanged(Location location) {
+                                    // stop for requesting updates again and again
+                                    locationManager.removeUpdates(this);
+                                }
+
+                                @Override
+                                public void onStatusChanged(String provider, int status, Bundle extras) {
+                                }
+
+                                @Override
+                                public void onProviderEnabled(String provider) {
+                                }
+
+                                @Override
+                                public void onProviderDisabled(String provider) {
+                                }
+                            });
+                }
             }
 
             // if location is not ON
@@ -558,17 +587,17 @@ public class ClassDetailsActivity extends AppCompatActivity {
 
                 // starting session
                 Log.d(TAG, classId + " " + attendanceDate + " " + attendanceTimeout + " " + latitude + " " + longitude + " " + timeoutMins);
-                FirebaseDatabase.getClassSessionByClassId(classId).addListenerForSingleValueEvent(
+                FirebaseController.getClassSessionByClassId(classId).addListenerForSingleValueEvent(
                         new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 prompt.hideProgress();
 
                                 // if session was not started already in today date
-                                if (!dataSnapshot.exists() || !String.valueOf(dataSnapshot.child(FirebaseDatabase.ATTENDANCE_DATE).getValue()).equals(attendanceDate)) {
+                                if (!dataSnapshot.exists() || !String.valueOf(dataSnapshot.child(FirebaseController.ATTENDANCE_DATE).getValue()).equals(attendanceDate)) {
 
                                     // adding new session in database
-                                    FirebaseDatabase.addSession(classId, attendanceDate, attendanceTimeout, longitude, latitude);
+                                    FirebaseController.addSession(classId, attendanceDate, attendanceTimeout, longitude, latitude);
 
                                     // show extra wait prompt to teacher that session has started and display session timeout
                                     prompt.showSuccessMessagePrompt("Session has started.\nSession timeout is set:\n\n" + attendanceTimeout);
@@ -584,7 +613,7 @@ public class ClassDetailsActivity extends AppCompatActivity {
                                 else {
 
                                     // show extra wait prompt to teacher that session was already started and display previous session timeout
-                                    prompt.showFailureMessagePrompt("Session was already started.\nHaving attendance timeout:\n\n" + dataSnapshot.child(FirebaseDatabase.TIMEOUT).getValue());
+                                    prompt.showFailureMessagePrompt("Session was already started.\nHaving attendance timeout:\n\n" + dataSnapshot.child(FirebaseController.TIMEOUT).getValue());
                                     SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_EXTRA, new Runnable() {
                                         @Override
                                         public void run() {
@@ -611,7 +640,7 @@ public class ClassDetailsActivity extends AppCompatActivity {
                                                             prompt.hideInputPrompt();
 
                                                             // updating session timeout in database
-                                                            FirebaseDatabase.updateSessionTimeout(classId, attendanceTimeout, longitude, latitude);
+                                                            FirebaseController.updateSessionTimeout(classId, attendanceTimeout, longitude, latitude);
 
                                                             // show extra wait prompt about session has update and display new timeout
                                                             prompt.showSuccessMessagePrompt("Session timeout has been updated to:\n\n" + attendanceTimeout);
@@ -646,10 +675,10 @@ public class ClassDetailsActivity extends AppCompatActivity {
         if (requestCode == 1) {
 
             // if permission is not given
-            if (results.length > 0 || results[0] != PackageManager.PERMISSION_GRANTED) {
+            if (results.length > 0 && results[0] != PackageManager.PERMISSION_GRANTED) {
 
                 // show prompt to teacher about GPS required for class session starting
-                prompt.showFailureMessagePrompt("Location permission is required for class session starting.");
+                prompt.showFailureMessagePrompt("Location permission is required for starting class session.");
                 SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
                     @Override
                     public void run() {
@@ -663,7 +692,7 @@ public class ClassDetailsActivity extends AppCompatActivity {
         if (requestCode == 2) {
 
             // if permission is not given
-            if (results.length > 0 || results[1] != PackageManager.PERMISSION_GRANTED) {
+            if (results.length > 0 && results[0] != PackageManager.PERMISSION_GRANTED) {
 
                 // show prompt to teacher about WRITE_EXTERNAL_STORAGE required for class session starting
                 prompt.showFailureMessagePrompt("Writing to storage permission is required for exporting attendance record.");

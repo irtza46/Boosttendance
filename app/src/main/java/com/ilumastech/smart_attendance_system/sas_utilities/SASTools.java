@@ -11,9 +11,12 @@ public class SASTools {
         (new Handler()).postDelayed(runnable, seconds * 1000);
     }
 
-    public static boolean isNetworkAvailable(Context context) {
+    public static boolean isInternetConnected(Context context) {
         NetworkInfo networkInfo = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
-        return (networkInfo != null && networkInfo.isConnected());
-    }
 
+        if (networkInfo != null && networkInfo.isConnected()) {
+            return true;
+        } else
+            return true;
+    }
 }

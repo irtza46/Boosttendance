@@ -9,6 +9,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.ilumastech.smart_attendance_system.list_classes.ClassRoom;
@@ -16,10 +17,12 @@ import com.ilumastech.smart_attendance_system.list_classes.Notification;
 import com.ilumastech.smart_attendance_system.main_activities.adapter.ClassListAdapter;
 import com.ilumastech.smart_attendance_system.notification_activities.adapter.NotificationListAdapter;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FirebaseDatabase {
+public class FirebaseController {
 
     public static final String USERS = "USERS";
     public static final String U_ID = "U_ID";
@@ -42,26 +45,26 @@ public class FirebaseDatabase {
     public static final String NOTIFICATIONS = "NOTIFICATIONS";
     public static final String MSG = "MSG";
     public static final String DATE_TIME = "DATE_TIME";
-    private static final String TAG = "FirebaseDatabase";
+    private static final String TAG = "FirebaseController";
 
     // Finalized
-    public static FirebaseAuth getFirebaseAuthInstance() {
+    public static FirebaseAuth getAuthInstance() {
         return FirebaseAuth.getInstance();
     }
 
     // Finalized
     public static FirebaseUser getUser() {
-        return getFirebaseAuthInstance().getCurrentUser();
+        return getAuthInstance().getCurrentUser();
     }
 
     // Finalized
-    public static DatabaseReference getDatabaseReference() {
-        return com.google.firebase.database.FirebaseDatabase.getInstance().getReference();
+    public static FirebaseDatabase getDatabaseInstance() {
+        return FirebaseDatabase.getInstance();
     }
 
     // Finalized
     public static DatabaseReference getDatabaseReference(String location) {
-        return com.google.firebase.database.FirebaseDatabase.getInstance().getReference(location);
+        return getDatabaseInstance().getReference(location);
     }
 
     // Finalized
@@ -82,7 +85,7 @@ public class FirebaseDatabase {
 
     // Finalized
     public static void updateUserPhoneNumber(String number) {
-        getDatabaseReference(FirebaseDatabase.USERS).child(getUser().getUid()).child(PHONE_NUMBER).setValue(number);
+        getDatabaseReference(FirebaseController.USERS).child(getUser().getUid()).child(PHONE_NUMBER).setValue(number);
     }
 
     // Finalized
@@ -171,7 +174,7 @@ public class FirebaseDatabase {
 
     // Finalized
     public static String getUniqueID() {
-        return getDatabaseReference().push().getKey();
+        return getDatabaseInstance().getReference().push().getKey();
     }
 
     // Finalized
@@ -350,7 +353,7 @@ public class FirebaseDatabase {
         newApplication.put(ATTENDANCE_ID, attendanceId);
 
         // storing new notification in database
-        getDatabaseReference(NOTIFICATIONS).child(getUser().getUid()).push().setValue(newApplication);
+        getDatabaseReference(NOTIFICATIONS).child(u_id).push().setValue(newApplication);
     }
 
     public static void getNotifications(final NotificationListAdapter notificationListAdapter) {
@@ -361,6 +364,12 @@ public class FirebaseDatabase {
         notificationRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                // clearing previous list
+                notificationListAdapter.clearList();
+
+                // for creating new list
+                ArrayList<Notification> notifications = new ArrayList<>();
 
                 // fetching each notification
                 for (DataSnapshot notification : dataSnapshot.getChildren()) {
@@ -380,12 +389,19 @@ public class FirebaseDatabase {
                         id = String.valueOf(notification.child(EMAIL).getValue());
 
                     // adding notification to notification list adapter
-                    notificationListAdapter.add(new Notification(msg, dateTime, className, id));
-
-                    // notifying notification list adapter about any changes
-                    notificationListAdapter.notifyDataSetChanged();
+                    notifications.add(new Notification(msg, dateTime, className, id));
                     Log.d(TAG, "Notification read: " + id);
                 }
+
+                // sorting notifications by date
+                Collections.sort(notifications, new Notification.DateComparator());
+
+                // listing all notifications
+                for (Notification notification : notifications)
+                    notificationListAdapter.add(notification);
+
+                // notifying notification list adapter about any changes
+                notificationListAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -400,12 +416,12 @@ public class FirebaseDatabase {
 //        Log.d(TAG, "Searching uid: " + uid);
 //
 //        // checking in users
-//        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("users/" +
+//        DatabaseReference reference = FirebaseController.getInstance().getReference("users/" +
 //                uid);
 //
 //        reference.keepSynced(true);
-//        FirebaseDatabase.getInstance().getReference("attendances").keepSynced(true);
-//        FirebaseDatabase.getInstance().getReference("attendances").keepSynced(true);
+//        FirebaseController.getInstance().getReference("attendances").keepSynced(true);
+//        FirebaseController.getInstance().getReference("attendances").keepSynced(true);
 //
 //        reference.addValueEventListener(new ValueEventListener() {
 //            @Override

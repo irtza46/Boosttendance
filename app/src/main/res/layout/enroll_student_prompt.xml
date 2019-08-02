@@ -25,8 +25,8 @@
         android:layout_marginBottom="10dp"
         android:text="Enroll new student"
         android:textAlignment="center"
-        android:textColor="@color/colorPrimary"
-        android:textAppearance="@style/TextAppearance.AppCompat.Headline" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:textColor="@color/colorPrimary" />
 
     <TextView
         android:id="@+id/prompt_message"
@@ -35,20 +35,20 @@
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="10dp"
-        android:textColor="#000"
         android:text="Enter student details"
         android:textAlignment="center"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="#000" />
 
     <EditText
         android:id="@+id/student_id"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_marginStart="20dp"
-        android:background="@drawable/tf_background"
         android:layout_marginEnd="20dp"
-        android:hint="Student ID"
         android:layout_marginBottom="20dp"
+        android:background="@drawable/tf_background"
+        android:hint="Student ID"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
@@ -57,11 +57,11 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_marginStart="20dp"
-        android:background="@drawable/tf_background"
         android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/tf_background"
         android:hint="Student Email"
         android:inputType="textEmailAddress"
-        android:layout_marginBottom="20dp"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 

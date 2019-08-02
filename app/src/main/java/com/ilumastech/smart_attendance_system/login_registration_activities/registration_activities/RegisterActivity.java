@@ -19,7 +19,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.hbb20.CountryCodePicker;
 import com.ilumastech.smart_attendance_system.R;
-import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase;
+import com.ilumastech.smart_attendance_system.firebase_database.FirebaseController;
 import com.ilumastech.smart_attendance_system.prompts.Prompt;
 import com.ilumastech.smart_attendance_system.sas_utilities.SASConstants;
 import com.ilumastech.smart_attendance_system.sas_utilities.SASTools;
@@ -53,9 +53,36 @@ public class RegisterActivity extends AppCompatActivity {
 
         // creating prompt instance to display prompts to user
         prompt = new Prompt(this);
+
+        // checking if internet is working or not
+        if (!SASTools.isInternetConnected(getApplicationContext())) {
+
+            // show short wait about internet not connected
+            prompt.showFailureMessagePrompt("Not connected to internet.\nPlease connect to internet.");
+            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                @Override
+                public void run() {
+                    prompt.hidePrompt();
+                }
+            });
+        }
     }
 
     public void registerUser(View view) {
+
+        // checking if internet is working or not
+        if (!SASTools.isInternetConnected(getApplicationContext())) {
+
+            // show short wait about internet not connected
+            prompt.showFailureMessagePrompt("Not connected to internet.\nPlease connect to internet.");
+            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                @Override
+                public void run() {
+                    prompt.hidePrompt();
+                }
+            });
+            return;
+        }
 
         // getting entered user details
         final String fullName = fullName_tf.getText().toString();
@@ -69,7 +96,7 @@ public class RegisterActivity extends AppCompatActivity {
             return;
 
         // check if user don't exist with this number
-        FirebaseDatabase.getUserByMobileNumber(number).addValueEventListener(new ValueEventListener() {
+        FirebaseController.getUserByMobileNumber(number).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -111,7 +138,7 @@ public class RegisterActivity extends AppCompatActivity {
         prompt.showProgress("Sign Up", "Registering...");
 
         // creating account using email and password
-        FirebaseDatabase.getFirebaseAuthInstance().createUserWithEmailAndPassword(email, password)
+        FirebaseController.getAuthInstance().createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -122,7 +149,7 @@ public class RegisterActivity extends AppCompatActivity {
                             Log.d(TAG, "createUserWithEmail:success");
 
                             // getting user account
-                            FirebaseUser firebaseUser = FirebaseDatabase.getUser();
+                            FirebaseUser firebaseUser = FirebaseController.getUser();
 
                             // setting user account display name
                             firebaseUser.updateProfile(new UserProfileChangeRequest.Builder().setDisplayName(fullName).build());
@@ -130,15 +157,15 @@ public class RegisterActivity extends AppCompatActivity {
                             // sending verification email to user
                             firebaseUser.sendEmailVerification();
 
-                            // registering user in database without number
-                            FirebaseDatabase.createUser(firebaseUser.getUid(), fullName, email, "");
+                            // registering user in database with unverified number
+                            FirebaseController.createUser(firebaseUser.getUid(), fullName, email, "!" + number);
 
                             // show short wait prompt to user about account creation
                             prompt.showSuccessMessagePrompt("Account created.");
 
                             // starting number verification activity
-                            startActivity(new Intent(RegisterActivity.this, MobileVerificationActivity.class)
-                                    .putExtra("number", number));
+                            startActivity(new Intent(RegisterActivity.this, MobileVerificationActivity.class).putExtra("number", number)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                         }
 
                         // if user account not created

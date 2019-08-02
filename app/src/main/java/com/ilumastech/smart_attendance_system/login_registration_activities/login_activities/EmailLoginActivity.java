@@ -13,7 +13,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.ilumastech.smart_attendance_system.R;
-import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase;
+import com.ilumastech.smart_attendance_system.firebase_database.FirebaseController;
 import com.ilumastech.smart_attendance_system.login_registration_activities.registration_activities.RegisterActivity;
 import com.ilumastech.smart_attendance_system.main_activities.MainActivity;
 import com.ilumastech.smart_attendance_system.prompts.Prompt;
@@ -28,11 +28,26 @@ public class EmailLoginActivity extends AppCompatActivity {
 
     private EditText email_tf, password_tf;
 
+    private Prompt prompt;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_email_login);
         init();
+
+        // checking if internet is working or not
+        if (!SASTools.isInternetConnected(getApplicationContext())) {
+
+            // show short wait about internet not connected
+            prompt.showFailureMessagePrompt("Not connected to internet.\nPlease connect to internet.");
+            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                @Override
+                public void run() {
+                    prompt.hidePrompt();
+                }
+            });
+        }
     }
 
     private void init() {
@@ -45,6 +60,20 @@ public class EmailLoginActivity extends AppCompatActivity {
     }
 
     public void authenticate(View view) {
+
+        // checking if internet is working or not
+        if (!SASTools.isInternetConnected(getApplicationContext())) {
+
+            // show short wait about internet not connected
+            prompt.showFailureMessagePrompt("Not connected to internet.\nPlease connect to internet.");
+            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
+                @Override
+                public void run() {
+                    prompt.hidePrompt();
+                }
+            });
+            return;
+        }
 
         // getting entered email and password
         String email = email_tf.getText().toString();
@@ -63,7 +92,7 @@ public class EmailLoginActivity extends AppCompatActivity {
         prompt.showProgress("Sign In", "Login in...");
 
         // authenticating email and password
-        FirebaseDatabase.getFirebaseAuthInstance().signInWithEmailAndPassword(email, password)
+        FirebaseController.getAuthInstance().signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -123,6 +152,13 @@ public class EmailLoginActivity extends AppCompatActivity {
         }
 
         return true;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Objects.requireNonNull(prompt).hidePrompt();
+        prompt = null;
     }
 
 }

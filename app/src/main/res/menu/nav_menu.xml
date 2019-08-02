@@ -7,7 +7,7 @@
             <item
                 android:id="@+id/notifications"
                 android:icon="@drawable/ic_notifications"
-                android:title="Notifications"/>
+                android:title="Notifications" />
 
             <item
                 android:id="@+id/logout"

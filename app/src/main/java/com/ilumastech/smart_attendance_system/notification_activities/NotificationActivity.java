@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.ilumastech.smart_attendance_system.R;
-import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase;
+import com.ilumastech.smart_attendance_system.firebase_database.FirebaseController;
 import com.ilumastech.smart_attendance_system.list_classes.Notification;
 import com.ilumastech.smart_attendance_system.notification_activities.adapter.NotificationListAdapter;
 import com.ilumastech.smart_attendance_system.prompts.NotificationMessagePrompt;
@@ -41,8 +41,8 @@ public class NotificationActivity extends AppCompatActivity {
         });
 
         // created joined and created classes arrays adapter
-        NotificationListAdapter notificationListAdapter = new NotificationListAdapter(this, R.layout.notification_card);
-        FirebaseDatabase.getNotifications(notificationListAdapter);
+        final NotificationListAdapter notificationListAdapter = new NotificationListAdapter(this, R.layout.notification_card);
+        FirebaseController.getNotifications(notificationListAdapter);
 
         // displaying joined classes by default
         listView.setAdapter(notificationListAdapter);

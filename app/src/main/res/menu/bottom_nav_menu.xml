@@ -2,10 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/joined_classes"
-        android:title="Joined Classes"
-        android:icon="@drawable/ic_group_white_24dp"/>
+        android:icon="@drawable/ic_group_white_24dp"
+        android:title="Joined Classes" />
     <item
         android:id="@+id/created_classes"
-        android:title="Created Classes"
-        android:icon="@drawable/ic_school_white_24dp"/>
+        android:icon="@drawable/ic_school_white_24dp"
+        android:title="Created Classes" />
 </menu>

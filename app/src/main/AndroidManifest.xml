@@ -4,9 +4,9 @@
     package="com.ilumastech.smart_attendance_system">
 
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -33,15 +33,6 @@
         </activity>
 
         <activity
-            android:name=".notification_activities.NotificationActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".general_activities.AboutActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".login_registration_activities.registration_activities.RegisterActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".login_registration_activities.LoginActivity"
             android:screenOrientation="portrait" />
         <activity
@@ -51,11 +42,21 @@
             android:name=".login_registration_activities.login_activities.MobileLoginActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".login_registration_activities.registration_activities.MobileVerificationActivity"
+            android:name=".login_registration_activities.registration_activities.RegisterActivity"
             android:screenOrientation="portrait" />
+
         <activity
             android:name=".main_activities.MainActivity"
             android:alwaysRetainTaskState="true"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".notification_activities.NotificationActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".general_activities.AboutActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".login_registration_activities.registration_activities.MobileVerificationActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".teacher_activities.ClassDetailsActivity"
@@ -67,6 +68,7 @@
             android:name=".teacher_activities.CreateClassActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
+
     </application>
 
 </manifest>

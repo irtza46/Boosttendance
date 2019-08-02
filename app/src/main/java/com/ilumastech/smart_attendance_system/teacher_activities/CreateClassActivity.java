@@ -19,7 +19,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.ilumastech.smart_attendance_system.R;
-import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase;
+import com.ilumastech.smart_attendance_system.firebase_database.FirebaseController;
 import com.ilumastech.smart_attendance_system.prompts.Prompt;
 import com.ilumastech.smart_attendance_system.sas_utilities.SASConstants;
 import com.ilumastech.smart_attendance_system.sas_utilities.SASTools;
@@ -148,7 +148,7 @@ public class CreateClassActivity extends AppCompatActivity {
             final String teacherId = FirebaseAuth.getInstance().getUid();
 
             // check if class with same name already exists
-            FirebaseDatabase.getClassByU_ID(teacherId)
+            FirebaseController.getClassByU_ID(teacherId)
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -164,7 +164,7 @@ public class CreateClassActivity extends AppCompatActivity {
                                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
                                     // if class with this name has been created before
-                                    String alreadyClassName = (String) snapshot.child(FirebaseDatabase.CLASS_NAME).getValue();
+                                    String alreadyClassName = (String) snapshot.child(FirebaseController.CLASS_NAME).getValue();
                                     if (Objects.requireNonNull(alreadyClassName).equalsIgnoreCase(className)) {
 
                                         // showing prompt to teacher about class with same name already exists
@@ -206,18 +206,18 @@ public class CreateClassActivity extends AppCompatActivity {
 
     private void addClass(String className, String teacherId) {
 
-        final String classId = FirebaseDatabase.getUniqueID();
+        final String classId = FirebaseController.getUniqueID();
         Log.d(TAG, "Creating class classId: " + classId);
 
         // creating new class in database
-        FirebaseDatabase.addNewClass(classId, className, teacherId);
+        FirebaseController.addNewClass(classId, className, teacherId);
 
         // updating created classes of user in database
-        FirebaseDatabase.updateCreatedClassesByU_ID(teacherId, classId);
+        FirebaseController.updateCreatedClassesByU_ID(teacherId, classId);
 
         // adding students in class
         for (int i = 0; i < studentsEmails.size(); i++)
-            FirebaseDatabase.addJoinClass(classId, studentsEmails.get(i), studentsIds.get(i));
+            FirebaseController.addJoinClass(classId, studentsEmails.get(i), studentsIds.get(i));
 
         // show short wait prompt to user that class has been created
         prompt.showSuccessMessagePrompt("Class has been created.");

@@ -1,5 +1,14 @@
 package com.ilumastech.smart_attendance_system.list_classes;
 
+import android.util.Log;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Objects;
+
 public class Notification {
 
     private String msg;
@@ -44,5 +53,24 @@ public class Notification {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public static class DateComparator implements Comparator<Notification>
+    {
+        @Override
+        public int compare(Notification o1, Notification o2) {
+
+            // sorting notifications according to date time
+            Date date1 = null;
+            Date date2 = null;
+            try {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss a", Locale.US);
+                date1 = dateFormat.parse(o2.getDateTime());
+                date2 = dateFormat.parse(o1.getDateTime());
+            } catch (ParseException ignored) {
+            }
+            Log.d("DateComparator", date1 + " -> " + date2 + " : " + (Objects.requireNonNull(date1).compareTo(date2)));
+            return (Objects.requireNonNull(date1).compareTo(date2));
+        }
     }
 }

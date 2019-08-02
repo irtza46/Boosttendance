@@ -25,8 +25,8 @@
         android:layout_marginBottom="10dp"
         android:text="Success"
         android:textAlignment="center"
-        android:textColor="@color/colorPrimary"
-        android:textAppearance="@style/TextAppearance.AppCompat.Headline" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:textColor="@color/colorPrimary" />
 
     <ProgressBar
         android:id="@+id/prompt_progress"
@@ -44,10 +44,10 @@
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="10dp"
-        android:textColor="#000"
         android:text="Prompt Message"
         android:textAlignment="center"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="#000" />
 
     <LinearLayout
         android:id="@+id/prompt_buttons"

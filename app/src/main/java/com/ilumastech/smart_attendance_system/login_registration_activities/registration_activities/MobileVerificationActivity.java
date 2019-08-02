@@ -18,7 +18,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
 import com.ilumastech.smart_attendance_system.R;
-import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase;
+import com.ilumastech.smart_attendance_system.firebase_database.FirebaseController;
 import com.ilumastech.smart_attendance_system.main_activities.MainActivity;
 import com.ilumastech.smart_attendance_system.prompts.Prompt;
 import com.ilumastech.smart_attendance_system.sas_utilities.SASConstants;
@@ -121,9 +121,10 @@ public class MobileVerificationActivity extends AppCompatActivity {
         String code = code_tf.getText().toString();
 
         // validating entered code
-        if (!validate(code))
+        if (TextUtils.isEmpty(code)) {
+            code_tf.setError("Enter code received through SMS");
             return;
-
+        }
         Log.d(TAG, "verifyNumberWithCode: " + code);
 
         // verifying the providing code and login
@@ -149,7 +150,7 @@ public class MobileVerificationActivity extends AppCompatActivity {
     private void signInWithPhoneAuth(PhoneAuthCredential credential) {
 
         // linking phone number credential with user account
-        FirebaseUser firebaseUser = FirebaseDatabase.getUser();
+        FirebaseUser firebaseUser = FirebaseController.getUser();
         if (firebaseUser != null) {
             firebaseUser.updatePhoneNumber(credential)
                     .addOnCompleteListener(this, new OnCompleteListener<Void>() {
@@ -167,8 +168,8 @@ public class MobileVerificationActivity extends AppCompatActivity {
                                     public void run() {
                                         prompt.hidePrompt();
 
-                                        // updating phone number in data for this user
-                                        FirebaseDatabase.updateUserPhoneNumber(number);
+                                        // updating phone number in database for this user
+                                        FirebaseController.updateUserPhoneNumber(number);
 
                                         // show long wait prompt to user for login in
                                         prompt.showProgress("Sign In", "Login in...");
@@ -217,40 +218,6 @@ public class MobileVerificationActivity extends AppCompatActivity {
                     });
         }
     }
-
-    private boolean validate(String code) {
-
-        // validating if code has been input in the required data fields
-        if (TextUtils.isEmpty(code)) {
-            code_tf.setError("Enter code received through SMS");
-            return false;
-        }
-
-        return true;
-    }
-
-//    @Override
-//    public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
-//        super.onSaveInstanceState(savedInstanceState);
-//        savedInstanceState.putString("number", number);
-//        savedInstanceState.putBoolean("verified", verified);
-//    }
-//
-//    @Override
-//    public void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//        number = savedInstanceState.getString("number");
-//        verified = savedInstanceState.getBoolean("verified");
-//    }
-//
-//    @Override
-//    protected void onPause() {
-//        super.onPause();
-//        SharedPreferences sharedPreferences = getSharedPreferences("TEMP", MODE_PRIVATE);
-//        SharedPreferences.Editor editor = sharedPreferences.edit();
-//        editor.putString("activityName", this.getClass().getName());
-//        editor.apply();
-//    }
 
     @Override
     public void onDestroy() {

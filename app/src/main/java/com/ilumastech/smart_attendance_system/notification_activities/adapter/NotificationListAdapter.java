@@ -78,10 +78,17 @@ public class NotificationListAdapter extends ArrayAdapter<Notification> {
         return view;
     }
 
+    public void clearList()
+    {
+        notificationList.clear();
+        notifyDataSetChanged();
+    }
+
     private static class NotificationView {
         TextView class_name;
         TextView id;
         TextView dateTime;
     }
+
 }
 

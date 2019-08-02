@@ -44,9 +44,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:background="#000"
         android:layout_marginEnd="20dp"
-        android:layout_marginBottom="20dp">
+        android:layout_marginBottom="20dp"
+        android:background="#000">
 
         <EditText
             android:id="@+id/msg"
@@ -58,11 +58,11 @@
             android:hint="Write message here"
             android:inputType="textMultiLine"
             android:lines="5"
-            android:textColor="#000"
             android:maxLines="8"
             android:minLines="3"
             android:scrollbars="vertical"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="#000" />
 
     </LinearLayout>
 

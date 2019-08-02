@@ -1,6 +1,12 @@
 package com.ilumastech.smart_attendance_system.main_activities;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,6 +18,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -19,7 +27,7 @@ import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.ilumastech.smart_attendance_system.R;
-import com.ilumastech.smart_attendance_system.firebase_database.FirebaseDatabase;
+import com.ilumastech.smart_attendance_system.firebase_database.FirebaseController;
 import com.ilumastech.smart_attendance_system.general_activities.AboutActivity;
 import com.ilumastech.smart_attendance_system.list_classes.ClassRoom;
 import com.ilumastech.smart_attendance_system.login_registration_activities.LoginActivity;
@@ -27,6 +35,7 @@ import com.ilumastech.smart_attendance_system.main_activities.adapter.ClassListA
 import com.ilumastech.smart_attendance_system.notification_activities.NotificationActivity;
 import com.ilumastech.smart_attendance_system.prompts.Prompt;
 import com.ilumastech.smart_attendance_system.sas_utilities.SASConstants;
+import com.ilumastech.smart_attendance_system.sas_utilities.SASTools;
 import com.ilumastech.smart_attendance_system.student_activities.MarkAttendanceActivity;
 import com.ilumastech.smart_attendance_system.teacher_activities.ClassDetailsActivity;
 import com.ilumastech.smart_attendance_system.teacher_activities.CreateClassActivity;
@@ -76,8 +85,8 @@ public class MainActivity extends AppCompatActivity {
 
         // setting navigation header properties
         View navigationHeader = navigationView.getHeaderView(0);
-        ((TextView) navigationHeader.findViewById(R.id.nav_username)).setText(FirebaseDatabase.getUser().getDisplayName());
-        ((TextView) navigationHeader.findViewById(R.id.nav_email)).setText(FirebaseDatabase.getUser().getEmail());
+        ((TextView) navigationHeader.findViewById(R.id.nav_username)).setText(FirebaseController.getUser().getDisplayName());
+        ((TextView) navigationHeader.findViewById(R.id.nav_email)).setText(FirebaseController.getUser().getEmail());
 
         // initializing the classroom list views
         listView = findViewById(R.id.list_view);
@@ -112,6 +121,42 @@ public class MainActivity extends AppCompatActivity {
         // do not show floating button when joined classes are selected
         floatingButton = findViewById(R.id.float_button);
         floatingButton.setVisibility(View.GONE);
+
+        // if user has not already granted GPS permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+
+            // restarting main activity
+            Intent intent = getIntent();
+            finish();
+            startActivity(intent);
+        }
+
+        // if user has already granted GPS permission
+        else {
+
+            // requesting a location update
+            final LocationManager locationManager = ((LocationManager) getSystemService(Context.LOCATION_SERVICE));
+            if (locationManager != null)
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+                    @Override
+                    public void onLocationChanged(Location location) {
+                        locationManager.removeUpdates(this);
+                    }
+
+                    @Override
+                    public void onStatusChanged(String provider, int status, Bundle extras) {
+                    }
+
+                    @Override
+                    public void onProviderEnabled(String provider) {
+                    }
+
+                    @Override
+                    public void onProviderDisabled(String provider) {
+                    }
+                });
+        }
     }
 
     public void createClass(View view) {
@@ -154,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
                     prompt.hideInputPrompt();
 
                     // sign out current user
-                    FirebaseDatabase.getFirebaseAuthInstance().signOut();
+                    FirebaseController.getAuthInstance().signOut();
                     startActivity(new Intent(MainActivity.this, LoginActivity.class)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
 
@@ -169,10 +214,10 @@ public class MainActivity extends AppCompatActivity {
         else if (itemId == R.id.share) {
 
             // calling the sharing intent
-            Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+            Intent sharingIntent = new Intent(Intent.ACTION_SEND);
             sharingIntent.setType("text/plain");
-            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Smart Attendance System (Boosttendance)");
-            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, "Download and install:\n" + SASConstants.APPLICATION_DOWNLOAD_LINK);
+            sharingIntent.putExtra(Intent.EXTRA_SUBJECT, "Smart Attendance System (Boosttendance)");
+            sharingIntent.putExtra(Intent.EXTRA_TEXT, "Download and install:\n" + SASConstants.APPLICATION_DOWNLOAD_LINK);
             startActivity(Intent.createChooser(sharingIntent, "Share Download link"));
             return true;
         }
@@ -208,22 +253,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+
+        // if request code is of GPS permission
+        if (requestCode == 1) {
+
+            // if permission is not given
+            if (results.length > 0 && results[0] != PackageManager.PERMISSION_GRANTED) {
+
+                // show prompt to about GPS must required
+                prompt.showFailureMessagePrompt("Location permission is must required.");
+                SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_LONG, new Runnable() {
+                    @Override
+                    public void run() {
+                        prompt.hidePrompt();
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
     protected void onStart() {
+
         // clearing joined class list
         joinedClassListAdapter.clearList();
 
         // clearing created class list
         createdClassListAdapter.clearList();
 
-        FirebaseDatabase.getJoinedClasses(joinedClassListAdapter);
-        FirebaseDatabase.getCreatedClasses(createdClassListAdapter);
+        // refreshing classes list
+        FirebaseController.getJoinedClasses(joinedClassListAdapter);
+        FirebaseController.getCreatedClasses(createdClassListAdapter);
         super.onStart();
-    }
-
-    @Override
-    protected void onResume() {
-
-        super.onResume();
     }
 
     @Override
