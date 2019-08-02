@@ -53,36 +53,9 @@ public class RegisterActivity extends AppCompatActivity {
 
         // creating prompt instance to display prompts to user
         prompt = new Prompt(this);
-
-        // checking if internet is working or not
-        if (!SASTools.isInternetConnected(getApplicationContext())) {
-
-            // show short wait about internet not connected
-            prompt.showFailureMessagePrompt("Not connected to internet.\nPlease connect to internet.");
-            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
-                @Override
-                public void run() {
-                    prompt.hidePrompt();
-                }
-            });
-        }
     }
 
     public void registerUser(View view) {
-
-        // checking if internet is working or not
-        if (!SASTools.isInternetConnected(getApplicationContext())) {
-
-            // show short wait about internet not connected
-            prompt.showFailureMessagePrompt("Not connected to internet.\nPlease connect to internet.");
-            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
-                @Override
-                public void run() {
-                    prompt.hidePrompt();
-                }
-            });
-            return;
-        }
 
         // getting entered user details
         final String fullName = fullName_tf.getText().toString();

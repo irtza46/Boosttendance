@@ -103,6 +103,9 @@ public class FirebaseController {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                // clearing joined class list
+                joinedClassListAdapter.clearList();
+
                 // if there exist any joined class
                 if (dataSnapshot.exists()) {
 
@@ -206,6 +209,9 @@ public class FirebaseController {
         createdClassesRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                // clearing created class list
+                createdClassListAdapter.clearList();
 
                 // if there exist any created class
                 if (dataSnapshot.exists()) {

@@ -65,7 +65,7 @@ public class Prompt {
 
         // setting alert dialog properties
         Objects.requireNonNull(alertDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        alertDialog.setCancelable(false);
+//        alertDialog.setCancelable(false);
         alertDialog.setCanceledOnTouchOutside(false);
 
         // displaying alert dialog

@@ -134,7 +134,7 @@ public class CreateClassActivity extends AppCompatActivity {
     public void createClass(View view) {
 
         // getting entered class name
-        final String className = classname.getText().toString();
+        final String className = classname.getText().toString().trim();
 
         // checking if entered class name is not empty
         if (className.isEmpty()) {

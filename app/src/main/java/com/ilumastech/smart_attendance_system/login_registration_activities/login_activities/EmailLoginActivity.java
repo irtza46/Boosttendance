@@ -35,19 +35,6 @@ public class EmailLoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_email_login);
         init();
-
-        // checking if internet is working or not
-        if (!SASTools.isInternetConnected(getApplicationContext())) {
-
-            // show short wait about internet not connected
-            prompt.showFailureMessagePrompt("Not connected to internet.\nPlease connect to internet.");
-            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
-                @Override
-                public void run() {
-                    prompt.hidePrompt();
-                }
-            });
-        }
     }
 
     private void init() {
@@ -60,20 +47,6 @@ public class EmailLoginActivity extends AppCompatActivity {
     }
 
     public void authenticate(View view) {
-
-        // checking if internet is working or not
-        if (!SASTools.isInternetConnected(getApplicationContext())) {
-
-            // show short wait about internet not connected
-            prompt.showFailureMessagePrompt("Not connected to internet.\nPlease connect to internet.");
-            SASTools.wait(SASConstants.PROMPT_DISPLAY_WAIT_SHORT, new Runnable() {
-                @Override
-                public void run() {
-                    prompt.hidePrompt();
-                }
-            });
-            return;
-        }
 
         // getting entered email and password
         String email = email_tf.getText().toString();

@@ -122,17 +122,16 @@ public class MainActivity extends AppCompatActivity {
         floatingButton = findViewById(R.id.float_button);
         floatingButton.setVisibility(View.GONE);
 
+        getLocationPermission();
+    }
+
+    private void getLocationPermission() {
+
         // if user has not already granted GPS permission
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
 
-            // restarting main activity
-            Intent intent = getIntent();
-            finish();
-            startActivity(intent);
-        }
-
-        // if user has already granted GPS permission
+            // if user has already granted GPS permission
         else {
 
             // requesting a location update
@@ -267,6 +266,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         prompt.hidePrompt();
+                        getLocationPermission();
                     }
                 });
             }
